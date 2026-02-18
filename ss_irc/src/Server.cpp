@@ -138,8 +138,8 @@ void	Server::run(void)
 
 	while (_running and g_running)
 	{
-		pollCount = poll(&_pollFds[0], _pollFds.size(), -1);
-		if (pollCount < 1)
+		pollCount = poll(&_pollFds[0], _pollFds.size(), 10000);
+		if (pollCount < 0)
 			continue ;
 		i = _pollFds.size();
 		while (i--)
@@ -147,6 +147,7 @@ void	Server::run(void)
 			ss_handle_poll_events(this, i, _pollFds);
 			ss_handle_write_and_errors(this, i, _pollFds);
 		}
+		checkTimeouts();
 	}
 }
 
@@ -164,6 +165,7 @@ static void	ss_setup_new_client(int clientFd, const char *host,
 	pollFds.push_back(pfd);
 	client = new Client(clientFd);
 	client->setHostname(host);
+	client->setServername(SERVER_NAME);
 	clients[clientFd] = client;
 }
 
@@ -172,18 +174,26 @@ void	Server::acceptNewClient(void)
 	struct sockaddr_in	clientAddr;
 	socklen_t			clientLen(sizeof(clientAddr));
 	int					clientFd;
-	char				host[INET_ADDRSTRLEN];
+	char				ipbuf[INET_ADDRSTRLEN];
+	char				hostbuf[NI_MAXHOST];
 	t_text				ip;
+	t_text				hostname;
 
 	clientFd = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
 	if (clientFd < 0)
 		return (ss_print_fd("Erro ao aceitar cliente", 2));
-	inet_ntop(AF_INET, &(clientAddr.sin_addr), host, INET_ADDRSTRLEN);
-	ip = host;
+	inet_ntop(AF_INET, &(clientAddr.sin_addr), ipbuf, INET_ADDRSTRLEN);
+	ip = ipbuf;
+	if (getnameinfo((struct sockaddr*)&clientAddr, clientLen,
+		hostbuf, sizeof(hostbuf), NULL, 0, 0) == 0
+		and t_text(hostbuf) != ip)
+		hostname = hostbuf;
+	else
+		hostname = ip;
 	std::cout << "IP " << ip << " conectado. Total: "
 		<< ++_connectionCounts[ip] << std::endl;
-	ss_setup_new_client(clientFd, host, _clients, _pollFds);
-	std::cout << "Novo cliente conectado: " << clientFd << " from " << host
+	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
+	std::cout << "Novo cliente conectado: " << clientFd << " from " << hostname
 		<< std::endl;
 }
 
@@ -309,6 +319,7 @@ void	Server::handleClientData(int fd)
 		return ;
 	buffer[bytesRead] = '\0';
 	client = clientIt->second;
+	client->updateLastActivity();
 	client->appendToBuffer(buffer);
 	if (client->getBuffer().size() > 8192)
 	{
@@ -420,7 +431,8 @@ static void	ss_parse_params(const t_text &paramStr, t_vector &params)
 static bool	ss_check_auth(Client *client, const t_text &cmd)
 {
 	return (client->isAuthenticated() or cmd == "PASS" or cmd == "NICK"
-		or cmd == "USER" or cmd == "QUIT" or cmd == "CAP" or cmd == "PING");
+		or cmd == "USER" or cmd == "QUIT" or cmd == "CAP" or cmd == "PING"
+		or cmd == "PONG");
 }
 
 static void	ss_handle_unauth(Server *server, Client *client)
@@ -470,6 +482,8 @@ static void	ss_dispatch_all_commands(Server *server, Client *client,
 	}
 	else if (cmd == "PING")
 		server->handlePing(client, params);
+	else if (cmd == "PONG")
+		server->handlePong(client, params);
 	else
 		server->ss_print(client, 421, cmd + " :Unknown command");
 }
@@ -500,6 +514,49 @@ void	Server::processCommand(Client *client, const t_text &line)
 	if (client->isAuthenticated())
 		client->resetUnauthCommandCount();
 	ss_dispatch_all_commands(this, client, cmd, params);
+}
+
+void	Server::checkTimeouts(void)
+{
+	std::map<int, Client *>::iterator	it;
+	std::vector<int>					toRemove;
+	time_t								now(time(NULL));
+	Client								*client;
+	t_ss								ss;
+
+	it = _clients.begin();
+	while (it != _clients.end())
+	{
+		client = it->second;
+		if (not client->isAuthenticated()
+			and (now - client->getConnectTime() > 60))
+		{
+			sendTo(client->getFd(),
+				"ERROR :Closing Link: Authentication timeout\r\n");
+			toRemove.push_back(it->first);
+		}
+		else if (client->isAuthenticated()
+			and (now - client->getLastActivity() > 60))
+		{
+			if (not client->isPingPending())
+			{
+				ss.str("");
+				ss << "PING :" << SERVER_NAME << "\r\n";
+				sendTo(client->getFd(), ss.str());
+				client->setPingPending(true);
+				client->setPingSentTime(now);
+			}
+			else if (now - client->getPingSentTime() > 60)
+			{
+				sendTo(client->getFd(),
+					"ERROR :Closing Link: Ping timeout (120 seconds)\r\n");
+				toRemove.push_back(it->first);
+			}
+		}
+		++it;
+	}
+	for (size_t i = 0; i < toRemove.size(); ++i)
+		removeClient(toRemove[i]);
 }
 
 Client	*Server::getClient(const t_text &nickname)

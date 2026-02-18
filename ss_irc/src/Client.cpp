@@ -13,7 +13,9 @@
 #include "../include/Client.hpp"
 
 Client::Client(int fd) : _fd(fd), _unauthCommandCount(0), _authenticated(false),
-	_hasPassword(false), _hasNick(false), _hasUser(false)
+	_hasPassword(false), _hasNick(false), _hasUser(false),
+	_connectTime(time(NULL)), _lastActivity(time(NULL)),
+	_pingSentTime(0), _pingPending(false)
 {
 }
 
@@ -184,4 +186,39 @@ t_text	Client::getPrefix(void) const
 	if (not _hostname.empty())
 		host = _hostname;
     return (nick + "!" + user + "@" + host);
+}
+
+time_t	Client::getConnectTime(void) const
+{
+	return (_connectTime);
+}
+
+time_t	Client::getLastActivity(void) const
+{
+	return (_lastActivity);
+}
+
+time_t	Client::getPingSentTime(void) const
+{
+	return (_pingSentTime);
+}
+
+bool	Client::isPingPending(void) const
+{
+	return (_pingPending);
+}
+
+void	Client::updateLastActivity(void)
+{
+	_lastActivity = time(NULL);
+}
+
+void	Client::setPingPending(bool pending)
+{
+	_pingPending = pending;
+}
+
+void	Client::setPingSentTime(time_t t)
+{
+	_pingSentTime = t;
 }

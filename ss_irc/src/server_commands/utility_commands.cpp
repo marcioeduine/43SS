@@ -25,6 +25,13 @@ void	Server::handlePing(Client *client, const t_vector &params)
 	sendTo(client->getFd(), ss[1].str() + params[0] + "\r\n");
 }
 
+void	Server::handlePong(Client *client, const t_vector &params)
+{
+	(void)params;
+	client->setPingPending(false);
+	client->updateLastActivity();
+}
+
 void	Server::handleCap(Client *client, const t_vector &params)
 {
 	if (not params.empty() and (params[0] == "LS"))

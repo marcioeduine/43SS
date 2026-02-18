@@ -14,6 +14,7 @@
 # define CLIENT_HPP
 
 # include <string>
+# include <ctime>
 
 typedef std::string	t_text;
 
@@ -33,6 +34,10 @@ class	Client
 		bool	_hasPassword;
 		bool	_hasNick;
 		bool	_hasUser;
+		time_t	_connectTime;
+		time_t	_lastActivity;
+		time_t	_pingSentTime;
+		bool	_pingPending;
 
 	public:
 		Client(int fd);
@@ -62,6 +67,14 @@ class	Client
 		bool			isAuthenticated(void) const;
 		bool			hasPassword(void) const;
 		bool			hasNick(void) const;
+
+		time_t			getConnectTime(void) const;
+		time_t			getLastActivity(void) const;
+		time_t			getPingSentTime(void) const;
+		bool			isPingPending(void) const;
+		void			updateLastActivity(void);
+		void			setPingPending(bool pending);
+		void			setPingSentTime(time_t t);
 
 		t_text			getPrefix(void) const;
 		t_text			&getBuffer(void);

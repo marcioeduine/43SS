@@ -21,6 +21,7 @@
 # include <cstring>
 # include <fcntl.h>
 # include <map>
+# include <netdb.h>
 # include <poll.h>
 # include <sstream>
 # include <unistd.h>
@@ -67,6 +68,7 @@ class	Server
 		void	removeClient(int fd);
 		void	handleClientData(int fd);
 		void	handleClientWrite(int fd);
+		void	checkTimeouts(void);
 
 		void	sendTo(int fd, const t_text &msg);
 		void	enablePollOut(int fd);
@@ -88,6 +90,7 @@ class	Server
 		void	handleMode(Client *client, const t_vector &params);
 		void	handleModeUser(Client *client, const t_vector &params);
 		void	handlePing(Client *client, const t_vector &params);
+		void	handlePong(Client *client, const t_vector &params);
 };
 
 void	ss_print_fd(const t_text &s, int fd);
