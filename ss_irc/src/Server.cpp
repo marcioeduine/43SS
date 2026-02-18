@@ -175,7 +175,6 @@ static void	ss_setup_new_client(int clientFd, const char *host,
 	pollFds.push_back(pfd);
 	client = new Client(clientFd);
 	client->setHostname(host);
-	client->setServername(SERVER_NAME);
 	clients[clientFd] = client;
 }
 
@@ -597,24 +596,9 @@ int		Server::getServerSocket(void) const
 	return (_serverSocket);
 }
 
-t_text	Server::getPassword(void) const
-{
-	return (_password);
-}
-
 std::map<int, Client *>	&Server::getClients(void)
 {
 	return (_clients);
-}
-
-std::vector<struct pollfd>	&Server::getPollFds(void)
-{
-	return (_pollFds);
-}
-
-void	Server::stop(void)
-{
-	_running = false;
 }
 
 void	ss_print_fd(const t_text &s, int fd)

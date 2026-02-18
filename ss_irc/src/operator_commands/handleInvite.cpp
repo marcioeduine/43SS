@@ -15,14 +15,13 @@
 
 static t_text	ss_message(int index)
 {
-	t_text	message[6];
+	t_text	message[5];
 
 	message[0] = "INVITE :Not enough parameters";
 	message[1] = " :No such nick";
 	message[2] = " :No such channel";
 	message[3] = " :You're not channel operator";
-	message[4] = " :is already on channel as operator";
-	message[5] = " :is already on channel";
+	message[4] = " :is already on channel";
 	return (message[index]);
 }
 
@@ -43,7 +42,7 @@ void	Server::handleInvite(Client *client, const t_vector &params)
 	if (not channel->isOperator(client))
 		return (ss_print(client, 482, params[1] + ss_message(3)));
 	if (channel->isMember(targetClient))
-		return (ss_print(client, 443, params[0] + " " + params[1] + ss_message(5)));
+		return (ss_print(client, 443, params[0] + " " + params[1] + ss_message(4)));
 	channel->inviteClient(targetClient);
 	invite_msg += params[0] + " " + params[1] + "\r\n";
 	sendTo(targetClient->getFd(), invite_msg);
