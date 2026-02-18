@@ -58,18 +58,12 @@ void	Server::handlePrivmsg(Client *client, const t_vector &params)
 	t_text						target;
 	t_text						fullMsg;
 	t_text						msg(":" + client->getPrefix() + " PRIVMSG ");
-	t_ss						ss;
 
 	if (params.size() < 2)
 		return (ss_print(client, 461, ss_message(0)));
-	fullMsg = params[1];
-	for (size_t i = 2; i < params.size(); ++i)
-		fullMsg += " " + params[i];
+	fullMsg = ss_join_params(params, 1);
 	(fixed.push_back(params[0]), fixed.push_back(fullMsg));
-	ss << params[0];
-	while (std::getline(ss, target, ','))
-		if (not target.empty())
-			vec_targets.push_back(target);
+	ss_parse_csv(params[0], vec_targets);
 	it = vec_targets.begin();
 	while (it != vec_targets.end())
 	{

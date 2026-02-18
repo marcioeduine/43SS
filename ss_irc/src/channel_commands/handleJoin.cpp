@@ -27,16 +27,6 @@ static t_text	ss_message(int index)
 	return (message[index]);
 }
 
-static void	ss_parse_channels(const t_text &str, t_vector &channels)
-{
-	t_ss	ss(str);
-	t_text	token;
-
-	while (std::getline(ss, token, ','))
-		if (not token.empty())
-			channels.push_back(token);
-}
-
 static void	ss_parse_keys(const t_vector &params, t_vector &keys)
 {
 	t_ss	ss;
@@ -133,7 +123,7 @@ void	Server::handleJoin(Client *client, const t_vector &params)
 
 	if (params.empty())
 		return (ss_print(client, 461, ss_message(0)));
-	ss_parse_channels(params[0], vec_channels);
+	ss_parse_csv(params[0], vec_channels);
 	ss_parse_keys(params, keys);
 	while (++i < vec_channels.size())
 	{

@@ -23,16 +23,6 @@ static t_text	ss_message(int index)
 	return (message[index]);
 }
 
-static void	ss_parse_channels(const t_text &str, t_vector &channels)
-{
-	t_ss	ss(str);
-	t_text	chan;
-
-	while (std::getline(ss, chan, ','))
-		if (not chan.empty())
-			channels.push_back(chan);
-}
-
 static void	ss_process_part(Server *server, Client *client,
 	const t_text &chan, const t_text &reason, const t_text &part_msg)
 {
@@ -62,12 +52,8 @@ void	Server::handlePart(Client *client, const t_vector &params)
 	if (params.empty())
 		return (ss_print(client, 461, ss_message(0)));
 	if (params.size() > 1)
-	{
-		reason = params[1];
-		for (size_t i = 2; i < params.size(); ++i)
-			reason += " " + params[i];
-	}
-	ss_parse_channels(params[0], channels);
+		reason = ss_join_params(params, 1);
+	ss_parse_csv(params[0], channels);
 	it = channels.begin();
 	while (it != channels.end())
 		(ss_process_part(this, client, *it, reason, part_msg), ++it);

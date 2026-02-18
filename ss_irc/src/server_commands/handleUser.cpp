@@ -24,6 +24,5 @@ void	Server::handleUser(Client *client, const t_vector &params)
 		return (ss_print(client, 462, message[1]));
 	(client->setUsername(params[0]),
 	client->setHasUser(true));
-	if (client->hasPassword() and client->hasNick() and client->hasUser())
-		(client->setAuthenticated(true), sendWelcome(client));
+	tryCompleteRegistration(client);
 }

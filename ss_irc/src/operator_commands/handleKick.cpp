@@ -35,11 +35,7 @@ void	Server::handleKick(Client *client, const t_vector &params)
 	if (params.size() < 2)
 		return (ss_print(client, 461, ss_message(0)));
 	if (params.size() > 2)
-	{
-		reason = params[2];
-		for (size_t i = 3; i < params.size(); ++i)
-			reason += " " + params[i];
-	}
+		reason = ss_join_params(params, 2);
 	channel = getChannel(params[0]);
 	if (not channel)
 		return (ss_print(client, 403, params[0] + ss_message(1)));
