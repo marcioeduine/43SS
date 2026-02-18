@@ -24,9 +24,7 @@ class	Client
 		int		_fd;
 		t_text	_nickname;
 		t_text	_username;
-		t_text	_realname;
 		t_text	_hostname;
-		t_text	_servername;
 		t_text	_buffer;
 		t_text	_outBuffer;
 		bool	_authenticated;
@@ -45,16 +43,12 @@ class	Client
 		
 		void			setNickname(const t_text &nickname);
 		void			setUsername(const t_text &username);
-		void			setRealname(const t_text &realname);
 		void			setHostname(const t_text &hostname);
-		void			setServername(const t_text &servername);
 		void			setAuthenticated(bool authenticated);
 		void			setHasPassword(bool hasPassword);
 		void			setHasUser(bool hasUser);
-		void			clearOutBuffer(void);
 		void			eraseFromOutBuffer(size_t bytes);
 		void			appendToOutBuffer(const t_text &data);
-		void			clearBuffer(void);
 		void			appendToBuffer(const t_text &data);
 		void			setHasNick(bool hasNick);
 
@@ -74,10 +68,7 @@ class	Client
 		t_text			&getBuffer(void);
 		const t_text	&getBuffer(void) const;
 		const t_text	&getOutBuffer(void) const;
-		const t_text	&getRealname(void) const;
 		const t_text	&getHostname(void) const;
-		const t_text	&getUsername(void) const;
-		const t_text	&getServername(void) const;
 		const t_text	&getNickname(void) const;
 };
 
