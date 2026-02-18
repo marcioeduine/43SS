@@ -152,7 +152,7 @@ void	Server::run(void)
 }
 
 static void	ss_setup_new_client(int clientFd, const char *host,
-	std::map<int, Client *> &clients,
+	const char *ip, std::map<int, Client *> &clients,
 	std::vector<struct pollfd> &pollFds)
 {
 	struct pollfd	pfd;
@@ -165,6 +165,7 @@ static void	ss_setup_new_client(int clientFd, const char *host,
 	pollFds.push_back(pfd);
 	client = new Client(clientFd);
 	client->setHostname(host);
+	client->setIpAddress(ip);
 	client->setServername(SERVER_NAME);
 	clients[clientFd] = client;
 }
@@ -192,7 +193,7 @@ void	Server::acceptNewClient(void)
 		hostname = ip;
 	std::cout << "IP " << ip << " conectado. Total: "
 		<< ++_connectionCounts[ip] << std::endl;
-	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
+	ss_setup_new_client(clientFd, hostname.c_str(), ipbuf, _clients, _pollFds);
 	std::cout << "Novo cliente conectado: " << clientFd << " from " << hostname
 		<< std::endl;
 }
@@ -256,7 +257,7 @@ void	Server::removeClient(int fd)
 
 	if (_clients.find(fd) == _clients.end())
 		return ;
-	clientIp = _clients[fd]->getHostname();
+	clientIp = _clients[fd]->getIpAddress();
 	ss_broadcast_quit(_clients[fd], _channels);
 	ss_remove_from_channels(_clients[fd], _channels);
 	ss_remove_from_poll(fd, _pollFds);
