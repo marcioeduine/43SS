@@ -1,0 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*    handleUser.cpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mcaquart <mcaquart@student.42luanda.com>   +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/16 10:06:51 by mcaquart          #+#    #+#             */
+/*   Updated: 2026/02/16 10:06:51 by mcaquart         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../../include/Channel.hpp"
+#include "../../include/Server.hpp"
+
+void	Server::handleUser(Client *client, const t_vector &params)
+{
+	t_text	message[3];
+
+	message[0] = "USER :Not enough parameters";
+	message[1] = "USER :Given more parameter than expected";
+	message[2] = ":You may not reregister";
+	if (params.size() < 4)
+		return (ss_print(client, 461, message[0]));
+	if (params.size() > 4)
+		return (ss_print(client, 461, message[1]));
+	if (client->hasUser())
+		return (ss_print(client, 462, message[0]));
+	(client->setUsername(params[0]), client->setRealname(params[3]),
+	client->setHasUser(true));
+	if (client->hasPassword() and client->hasNick() and client->hasUser())
+		(client->setAuthenticated(true), sendWelcome(client));
+}
