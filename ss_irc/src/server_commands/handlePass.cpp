@@ -27,6 +27,5 @@ void	Server::handlePass(Client *client, const t_vector &params)
 	else if (params[0] == _password)
 		client->setHasPassword(true);
 	else
-		(ss_print(client, 464, message[2]), handleClientWrite(client->getFd()),
-		removeClient(client->getFd()));
+		ss_print(client, 464, message[2]);
 }

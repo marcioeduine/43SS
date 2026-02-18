@@ -22,7 +22,6 @@ class	Client
 {
 	private:
 		int		_fd;
-		int		_unauthCommandCount;
 		t_text	_nickname;
 		t_text	_username;
 		t_text	_realname;
@@ -35,7 +34,6 @@ class	Client
 		bool	_hasPassword;
 		bool	_hasNick;
 		bool	_hasUser;
-		time_t	_connectTime;
 		time_t	_lastActivity;
 		time_t	_pingSentTime;
 		bool	_pingPending;
@@ -45,7 +43,6 @@ class	Client
 		~Client(void);
 
 		int				getFd(void) const;
-		int				getUnauthCommandCount(void) const;
 		
 		void			setNickname(const t_text &nickname);
 		void			setUsername(const t_text &username);
@@ -62,15 +59,12 @@ class	Client
 		void			clearBuffer(void);
 		void			appendToBuffer(const t_text &data);
 		void			setHasNick(bool hasNick);
-		void			incrementUnauthCommandCount(void);
-		void			resetUnauthCommandCount(void);
 
 		bool			hasUser(void) const;
 		bool			isAuthenticated(void) const;
 		bool			hasPassword(void) const;
 		bool			hasNick(void) const;
 
-		time_t			getConnectTime(void) const;
 		time_t			getLastActivity(void) const;
 		time_t			getPingSentTime(void) const;
 		bool			isPingPending(void) const;

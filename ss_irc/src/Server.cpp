@@ -191,11 +191,9 @@ void	Server::acceptNewClient(void)
 		hostname = hostbuf;
 	else
 		hostname = ip;
-	std::cout << SS_GREEN << "IP " << ip << " conectado. Total: "
-		<< ++_connectionCounts[ip] << SS_RESET << std::endl;
 	ss_setup_new_client(clientFd, hostname.c_str(), ipbuf, _clients, _pollFds);
-	std::cout << SS_GREEN << "Novo cliente conectado: " << clientFd
-		<< " from " << hostname << SS_RESET << std::endl;
+	std::cout << SS_GREEN << "Novo cliente conectado: fd=" << clientFd
+		<< " host=" << hostname << SS_RESET << std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
@@ -253,21 +251,15 @@ static void	ss_remove_from_poll(int fd, std::vector<struct pollfd> &pollFds)
 
 void	Server::removeClient(int fd, const t_text &quitReason)
 {
-	t_text	clientIp;
-
 	if (_clients.find(fd) == _clients.end())
 		return ;
-	clientIp = _clients[fd]->getIpAddress();
 	ss_broadcast_quit(_clients[fd], _channels, quitReason);
 	ss_remove_from_channels(_clients[fd], _channels);
 	ss_remove_from_poll(fd, _pollFds);
-	if (_connectionCounts[clientIp]--)
-		std::cout << SS_RED << "IP " << clientIp << " desconectado. Total: "
-			<< _connectionCounts[clientIp] << SS_RESET << std::endl;
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
-	std::cout << SS_RED << "Cliente desconectado: " << fd << SS_RESET
+	std::cout << SS_RED << "Cliente desconectado: fd=" << fd << SS_RESET
 		<< std::endl;
 }
 
@@ -439,14 +431,6 @@ static bool	ss_check_auth(Client *client, const t_text &cmd)
 
 static void	ss_handle_unauth(Server *server, Client *client)
 {
-	t_text	msg("[ ERROR ] Closing Link: Authentication timeout\r\n");
-
-	client->incrementUnauthCommandCount();
-	if (client->getUnauthCommandCount() > 10)
-	{
-		server->sendTo(client->getFd(), msg);
-		return (server->removeClient(client->getFd()));
-	}
 	server->ss_print(client, 451, ":You have not registered");
 }
 
@@ -515,8 +499,6 @@ void	Server::processCommand(Client *client, const t_text &line)
 	ss_parse_params(paramStr, params);
 	if (not ss_check_auth(client, cmd))
 		return (ss_handle_unauth(this, client));
-	if (client->isAuthenticated())
-		client->resetUnauthCommandCount();
 	ss_dispatch_all_commands(this, client, cmd, params);
 }
 
@@ -532,14 +514,7 @@ void	Server::checkTimeouts(void)
 	while (it != _clients.end())
 	{
 		client = it->second;
-		if (not client->isAuthenticated()
-			and (now - client->getConnectTime() > 60))
-		{
-			sendTo(client->getFd(),
-				"ERROR :Closing Link: Authentication timeout\r\n");
-			toRemove.push_back(it->first);
-		}
-		else if (client->isAuthenticated()
+		if (client->isAuthenticated()
 			and (now - client->getLastActivity() > 60))
 		{
 			if (not client->isPingPending())

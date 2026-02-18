@@ -12,30 +12,15 @@
 
 #include "../include/Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _unauthCommandCount(0), _authenticated(false),
+Client::Client(int fd) : _fd(fd), _authenticated(false),
 	_hasPassword(false), _hasNick(false), _hasUser(false),
-	_connectTime(time(NULL)), _lastActivity(time(NULL)),
+	_lastActivity(time(NULL)),
 	_pingSentTime(0), _pingPending(false)
 {
 }
 
 Client::~Client(void)
 {
-}
-
-int	Client::getUnauthCommandCount(void) const
-{
-	return (_unauthCommandCount);
-}
-
-void	Client::incrementUnauthCommandCount(void)
-{
-	_unauthCommandCount++;
-}
-
-void	Client::resetUnauthCommandCount(void)
-{
-	_unauthCommandCount = 0;
 }
 
 int	Client::getFd(void) const
@@ -196,11 +181,6 @@ t_text	Client::getPrefix(void) const
 	if (not _hostname.empty())
 		host = _hostname;
     return (nick + "!" + user + "@" + host);
-}
-
-time_t	Client::getConnectTime(void) const
-{
-	return (_connectTime);
 }
 
 time_t	Client::getLastActivity(void) const

@@ -49,7 +49,6 @@ class	Server
 		std::vector<struct pollfd>	_pollFds;
 		std::map<int, Client *>		_clients;
 		std::map<t_text, Channel *>	_channels;
-		std::map<t_text, int>		_connectionCounts;
 		bool						_running;
 
 		void	setupServer(void);
