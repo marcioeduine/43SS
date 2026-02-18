@@ -26,7 +26,6 @@ class	Client
 		t_text	_username;
 		t_text	_realname;
 		t_text	_hostname;
-		t_text	_ipAddress;
 		t_text	_servername;
 		t_text	_buffer;
 		t_text	_outBuffer;
@@ -48,7 +47,6 @@ class	Client
 		void			setUsername(const t_text &username);
 		void			setRealname(const t_text &realname);
 		void			setHostname(const t_text &hostname);
-		void			setIpAddress(const t_text &ip);
 		void			setServername(const t_text &servername);
 		void			setAuthenticated(bool authenticated);
 		void			setHasPassword(bool hasPassword);
@@ -78,7 +76,6 @@ class	Client
 		const t_text	&getOutBuffer(void) const;
 		const t_text	&getRealname(void) const;
 		const t_text	&getHostname(void) const;
-		const t_text	&getIpAddress(void) const;
 		const t_text	&getUsername(void) const;
 		const t_text	&getServername(void) const;
 		const t_text	&getNickname(void) const;

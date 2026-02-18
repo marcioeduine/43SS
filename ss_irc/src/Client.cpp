@@ -68,16 +68,6 @@ void	Client::setHostname(const t_text &hostname)
 	_hostname = hostname;
 }
 
-const t_text	&Client::getIpAddress(void) const
-{
-	return (_ipAddress);
-}
-
-void	Client::setIpAddress(const t_text &ip)
-{
-	_ipAddress = ip;
-}
-
 const t_text	&Client::getServername(void) const
 {
 	return (_servername);

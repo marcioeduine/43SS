@@ -152,7 +152,7 @@ void	Server::run(void)
 }
 
 static void	ss_setup_new_client(int clientFd, const char *host,
-	const char *ip, std::map<int, Client *> &clients,
+	std::map<int, Client *> &clients,
 	std::vector<struct pollfd> &pollFds)
 {
 	struct pollfd	pfd;
@@ -165,7 +165,6 @@ static void	ss_setup_new_client(int clientFd, const char *host,
 	pollFds.push_back(pfd);
 	client = new Client(clientFd);
 	client->setHostname(host);
-	client->setIpAddress(ip);
 	client->setServername(SERVER_NAME);
 	clients[clientFd] = client;
 }
@@ -191,7 +190,7 @@ void	Server::acceptNewClient(void)
 		hostname = hostbuf;
 	else
 		hostname = ip;
-	ss_setup_new_client(clientFd, hostname.c_str(), ipbuf, _clients, _pollFds);
+	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
 	std::cout << SS_GREEN << "Novo cliente conectado: fd=" << clientFd
 		<< " host=" << hostname << SS_RESET << std::endl;
 }

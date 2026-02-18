@@ -13,6 +13,27 @@
 #include "../../include/Channel.hpp"
 #include "../../include/Server.hpp"
 
+static bool	ss_is_special(char c)
+{
+	return (c == '-' or c == '[' or c == ']' or c == '\\'
+		or c == '`' or c == '^' or c == '{' or c == '}' or c == '|');
+}
+
+static bool	ss_valid_nick(const t_text &nick)
+{
+	if (nick.empty() or nick.size() > 9)
+		return (false);
+	if (not std::isalpha(nick[0]))
+		return (false);
+	for (t_text::size_type i = 1; i < nick.size(); ++i)
+	{
+		if (not std::isalpha(nick[i]) and not std::isdigit(nick[i])
+			and not ss_is_special(nick[i]))
+			return (false);
+	}
+	return (true);
+}
+
 void	Server::handleNick(Client *client, const t_vector &params)
 {
 	t_text	message[3];
@@ -26,7 +47,7 @@ void	Server::handleNick(Client *client, const t_vector &params)
 		return ;
 	if (getClient(params[0]))
 		return (ss_print(client, 433, params[0] + message[1]));
-	if (not std::isalpha(params[0][0]))
+	if (not ss_valid_nick(params[0]))
 		return (ss_print(client, 432, params[0] + message[2]));
 	if (client->isAuthenticated())
 	{
