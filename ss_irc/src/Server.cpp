@@ -273,7 +273,7 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
-	std::cout << SS_RED << "DISCONNECT" << SS_RESET << " "
+	std::cout << SS_ALERT << " DISCONNECT " << SS_RESET << " "
 		<< clientInfo << " (" << quitReason << ")" << std::endl;
 }
 
@@ -500,8 +500,6 @@ void	Server::processCommand(Client *client, const t_text &line)
 
 	if (cleanLine.empty())
 		return ;
-	std::cout << SS_CYAN << "CMD" << SS_RESET << " "
-		<< ss_client_id(client) << ": " << cleanLine << std::endl;
 	spacePos = cleanLine.find(' ');
 	if (spacePos == t_text::npos)
 		cmd = cleanLine;
@@ -543,7 +541,7 @@ void	Server::checkTimeouts(void)
 			}
 			else if (now - client->getPingSentTime() > 60)
 			{
-				std::cout << SS_RED << "TIMEOUT" << SS_RESET << " "
+				std::cout << SS_ALERT << " TIMEOUT " << SS_RESET << " "
 					<< ss_client_id(client) << " (no PONG after 120s)"
 					<< std::endl;
 				sendTo(client->getFd(),
@@ -628,7 +626,7 @@ void	ss_print_fd(const t_text &s, int fd)
 	else if (fd == 1)
 		std::cout << s << std::endl;
 	else if (fd == 2)
-		std::cerr << SS_RED << "ERROR" << SS_RESET << " " << s << std::endl;
+		std::cerr << SS_ALERT << " ERROR " << SS_RESET << " " << s << std::endl;
 	else
 		throw (std::invalid_argument("Invalid fd in SS_PRINT_FD!"));
 }

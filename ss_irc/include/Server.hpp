@@ -18,9 +18,9 @@
 # define SS_RED     "\033[31m"
 # define SS_GREEN   "\033[32m"
 # define SS_YELLOW  "\033[33m"
-# define SS_CYAN    "\033[36m"
 # define SS_BOLD    "\033[1m"
 # define SS_RESET   "\033[0m"
+# define SS_ALERT   "\033[5;41;97m"
 
 # include <algorithm>
 # include <arpa/inet.h>
