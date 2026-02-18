@@ -15,6 +15,13 @@
 
 # define SERVER_NAME "ircserv"
 
+# define SS_RED     "\033[31m"
+# define SS_GREEN   "\033[32m"
+# define SS_YELLOW  "\033[33m"
+# define SS_CYAN    "\033[36m"
+# define SS_BOLD    "\033[1m"
+# define SS_RESET   "\033[0m"
+
 # include <algorithm>
 # include <arpa/inet.h>
 # include <cerrno>
@@ -65,7 +72,7 @@ class	Server
 
 		Client	*getClient(const t_text &nickname);
 		void	acceptNewClient(void);
-		void	removeClient(int fd);
+		void	removeClient(int fd, const t_text &quitReason = "Client disconnected");
 		void	handleClientData(int fd);
 		void	handleClientWrite(int fd);
 		void	checkTimeouts(void);
@@ -91,6 +98,7 @@ class	Server
 		void	handleModeUser(Client *client, const t_vector &params);
 		void	handlePing(Client *client, const t_vector &params);
 		void	handlePong(Client *client, const t_vector &params);
+		void	handleQuit(Client *client, const t_vector &params);
 };
 
 void	ss_print_fd(const t_text &s, int fd);

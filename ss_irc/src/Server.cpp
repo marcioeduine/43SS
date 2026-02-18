@@ -100,8 +100,8 @@ void	Server::setupServer(void)
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_pollFds.push_back(pfd);
-	std::cout << "Servidor [ " << SERVER_NAME << " ] a escutar na porta "
-		<< _port << std::endl;
+	std::cout << SS_GREEN << SS_BOLD << "Servidor [ " << SERVER_NAME
+		<< " ] a escutar na porta " << _port << SS_RESET << std::endl;
 }
 
 static void	ss_handle_poll_events(Server *server, size_t i,
@@ -191,20 +191,20 @@ void	Server::acceptNewClient(void)
 		hostname = hostbuf;
 	else
 		hostname = ip;
-	std::cout << "IP " << ip << " conectado. Total: "
-		<< ++_connectionCounts[ip] << std::endl;
+	std::cout << SS_GREEN << "IP " << ip << " conectado. Total: "
+		<< ++_connectionCounts[ip] << SS_RESET << std::endl;
 	ss_setup_new_client(clientFd, hostname.c_str(), ipbuf, _clients, _pollFds);
-	std::cout << "Novo cliente conectado: " << clientFd << " from " << hostname
-		<< std::endl;
+	std::cout << SS_GREEN << "Novo cliente conectado: " << clientFd
+		<< " from " << hostname << SS_RESET << std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
-	std::map<t_text, Channel *> &channels)
+	std::map<t_text, Channel *> &channels, const t_text &reason)
 {
 	std::map<t_text, Channel *>::iterator	it(channels.begin());
 	t_text									quitMsg;
 
-	quitMsg = ":" + client->getPrefix() + " QUIT :Client disconnected\r\n";
+	quitMsg = ":" + client->getPrefix() + " QUIT :" + reason + "\r\n";
 	while (it != channels.end())
 	{
 		if (it->second->isMember(client))
@@ -251,23 +251,24 @@ static void	ss_remove_from_poll(int fd, std::vector<struct pollfd> &pollFds)
 	}
 }
 
-void	Server::removeClient(int fd)
+void	Server::removeClient(int fd, const t_text &quitReason)
 {
 	t_text	clientIp;
 
 	if (_clients.find(fd) == _clients.end())
 		return ;
 	clientIp = _clients[fd]->getIpAddress();
-	ss_broadcast_quit(_clients[fd], _channels);
+	ss_broadcast_quit(_clients[fd], _channels, quitReason);
 	ss_remove_from_channels(_clients[fd], _channels);
 	ss_remove_from_poll(fd, _pollFds);
 	if (_connectionCounts[clientIp]--)
-		std::cout << "IP " << clientIp << " desconectado. Total: "
-			<< _connectionCounts[clientIp] << std::endl;
+		std::cout << SS_RED << "IP " << clientIp << " desconectado. Total: "
+			<< _connectionCounts[clientIp] << SS_RESET << std::endl;
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
-	std::cout << "Cliente desconectado: " << fd << std::endl;
+	std::cout << SS_RED << "Cliente desconectado: " << fd << SS_RESET
+		<< std::endl;
 }
 
 static bool	ss_find_delimiter(const t_text &buf, size_t &pos, size_t &delimSize)
@@ -467,7 +468,7 @@ static void	ss_dispatch_all_commands(Server *server, Client *client,
 	else if (cmd == "PRIVMSG")
 		server->handlePrivmsg(client, params);
 	else if (cmd == "QUIT")
-		server->removeClient(client->getFd());
+		server->handleQuit(client, params);
 	else if (cmd == "KICK")
 		server->handleKick(client, params);
 	else if (cmd == "INVITE")
@@ -501,7 +502,7 @@ void	Server::processCommand(Client *client, const t_text &line)
 
 	if (cleanLine.empty())
 		return ;
-	std::cout << cleanLine << std::endl;
+	std::cout << SS_CYAN << ">> " << cleanLine << SS_RESET << std::endl;
 	spacePos = cleanLine.find(' ');
 	if (spacePos == t_text::npos)
 		cmd = cleanLine;
@@ -631,9 +632,9 @@ void	ss_print_fd(const t_text &s, int fd)
 	if (fd == -1)
 		throw (std::runtime_error(s));
 	else if (fd == 1)
-		std::cout << s << std::endl;
+		std::cout << SS_GREEN << s << SS_RESET << std::endl;
 	else if (fd == 2)
-		std::cerr << s << std::endl;
+		std::cerr << SS_RED << s << SS_RESET << std::endl;
 	else
 		throw (std::invalid_argument("Invalid fd in SS_PRINT_FD!"));
 }

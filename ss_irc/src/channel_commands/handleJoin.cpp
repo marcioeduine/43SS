@@ -98,20 +98,6 @@ static void	ss_send_join_info(Server *server, Client *client,
 	server->ss_print(client, 366, channel_name + ss_message(6));
 }
 
-static Channel	*ss_get_or_create_channel(Server *server,
-	const t_text &channel_name, const t_text &channel_key, Client *client)
-{
-	Channel	*channel(server->getChannel(channel_name));
-
-	if (not channel)
-	{
-		channel = server->createChannel(channel_name, channel_key);
-		channel->addMember(client);
-		channel->addOperator(client);
-	}
-	return (channel);
-}
-
 static void	ss_process_join(Server *server, Client *client,
 	const t_text &channel_name, const t_text &channel_key)
 {
@@ -119,13 +105,22 @@ static void	ss_process_join(Server *server, Client *client,
 
 	if ((channel_name[0] xor '#') and (channel_name[0] xor '&'))
 		return (server->ss_print(client, 403, channel_name + ss_message(1)));
-	channel = ss_get_or_create_channel(server, channel_name, channel_key, client);
-	if (channel->isMember(client))
-		return ;
-	if (not ss_check_channel_restrictions(server, client, channel,
-			channel_name, channel_key))
-		return ;
-	channel->addMember(client);
+	channel = server->getChannel(channel_name);
+	if (not channel)
+	{
+		channel = server->createChannel(channel_name, channel_key);
+		channel->addMember(client);
+		channel->addOperator(client);
+	}
+	else
+	{
+		if (channel->isMember(client))
+			return ;
+		if (not ss_check_channel_restrictions(server, client, channel,
+				channel_name, channel_key))
+			return ;
+		channel->addMember(client);
+	}
 	ss_send_join_info(server, client, channel, channel_name);
 }
 

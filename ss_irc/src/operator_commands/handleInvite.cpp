@@ -39,18 +39,13 @@ void	Server::handleInvite(Client *client, const t_vector &params)
 		return (ss_print(client, 401, params[0] + ss_message(1)));
 	channel = getChannel(params[1]);
 	if (not channel)
-		ss_print(client, 403, params[1] + ss_message(2));
-	else if (not channel->isOperator(client))
-		ss_print(client, 482, params[1] + ss_message(3));
-	if (targetClient == client)
-		return (ss_print(client, 482, params[1] + ss_message(4)));
-	else if (channel->isMember(targetClient))
-		ss_print(client, 443, params[0] + " " + params[1] + ss_message(5));
-	else
-	{
-		channel->inviteClient(targetClient);
-		invite_msg += params[0] + " " + params[1] + "\r\n";
-		sendTo(targetClient->getFd(), invite_msg);
-		ss_print(client, 341, params[0] + " " + params[1]);
-	}
+		return (ss_print(client, 403, params[1] + ss_message(2)));
+	if (not channel->isOperator(client))
+		return (ss_print(client, 482, params[1] + ss_message(3)));
+	if (channel->isMember(targetClient))
+		return (ss_print(client, 443, params[0] + " " + params[1] + ss_message(5)));
+	channel->inviteClient(targetClient);
+	invite_msg += params[0] + " " + params[1] + "\r\n";
+	sendTo(targetClient->getFd(), invite_msg);
+	ss_print(client, 341, params[0] + " " + params[1]);
 }

@@ -32,6 +32,15 @@ void	Server::handlePong(Client *client, const t_vector &params)
 	client->updateLastActivity();
 }
 
+void	Server::handleQuit(Client *client, const t_vector &params)
+{
+	t_text	reason("Client disconnected");
+
+	if (not params.empty())
+		reason = params[0];
+	removeClient(client->getFd(), reason);
+}
+
 void	Server::handleCap(Client *client, const t_vector &params)
 {
 	if (not params.empty() and (params[0] == "LS"))
@@ -42,6 +51,8 @@ void	Server::handleModeUser(Client *client, const t_vector &params)
 {
 	if (not params.empty() and (params[0] == client->getNickname()))
 		ss_print(client, 221, "+ ");
+	else if (not params.empty())
+		ss_print(client, 502, ":Can't change mode for other users");
 }
 
 void	Server::sendWelcome(Client *client)
@@ -61,10 +72,15 @@ void	Server::sendWelcome(Client *client)
 void	Server::ss_print(Client *client, int error_type, const t_text &s)
 {
 	t_ss	ss;
-	t_text	number_str("00");
+	t_text	nick(client->getNickname());
 
-	if ((ss << ':' << SERVER_NAME << ' ', error_type < 10))
-		ss << number_str;
-	ss << error_type << ' ' << client->getNickname() << ' ' << s << "\r\n";
+	if (nick.empty())
+		nick = "*";
+	ss << ':' << SERVER_NAME << ' ';
+	if (error_type < 10)
+		ss << "00";
+	else if (error_type < 100)
+		ss << "0";
+	ss << error_type << ' ' << nick << ' ' << s << "\r\n";
 	sendTo(client->getFd(), ss.str());
 }

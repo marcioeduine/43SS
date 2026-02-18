@@ -62,7 +62,11 @@ void	Server::handlePart(Client *client, const t_vector &params)
 	if (params.empty())
 		return (ss_print(client, 461, ss_message(0)));
 	if (params.size() > 1)
+	{
 		reason = params[1];
+		for (size_t i = 2; i < params.size(); ++i)
+			reason += " " + params[i];
+	}
 	ss_parse_channels(params[0], channels);
 	it = channels.begin();
 	while (it != channels.end())

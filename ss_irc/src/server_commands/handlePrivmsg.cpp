@@ -54,12 +54,18 @@ void	Server::handlePrivmsg(Client *client, const t_vector &params)
 {
 	t_vector::const_iterator	it;
 	t_vector					vec_targets;
+	t_vector					fixed;
 	t_text						target;
+	t_text						fullMsg;
 	t_text						msg(":" + client->getPrefix() + " PRIVMSG ");
 	t_ss						ss;
 
 	if (params.size() < 2)
 		return (ss_print(client, 461, ss_message(0)));
+	fullMsg = params[1];
+	for (size_t i = 2; i < params.size(); ++i)
+		fullMsg += " " + params[i];
+	(fixed.push_back(params[0]), fixed.push_back(fullMsg));
 	ss << params[0];
 	while (std::getline(ss, target, ','))
 		if (not target.empty())
@@ -69,8 +75,8 @@ void	Server::handlePrivmsg(Client *client, const t_vector &params)
 	{
 		(target.clear(), target = *it, ++it);
 		if ((target[0] == '#') or (target[0] == '&'))
-			ss_find_channel(*this, client, std::make_pair(target, msg), params);
+			ss_find_channel(*this, client, std::make_pair(target, msg), fixed);
 		else
-			ss_find_client(*this, client, std::make_pair(target, msg), params);
+			ss_find_client(*this, client, std::make_pair(target, msg), fixed);
 	}
 }
