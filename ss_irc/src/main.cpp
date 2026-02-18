@@ -25,10 +25,12 @@ int	main(int ac, char **av)
 		if ((port = atoi(av[1]), port < 1024 or port > 65535))
 			ss_print_fd("Invalid port!", -1);
 		(Server(port, av[2]).run(), std::cout << std::endl);
+		ss_print_fd("Closing " + t_text(av[0]) + "... Bye, bye!", 1);
+		return (0);
 	}
 	catch (const std::exception &e)
 	{
-		return (std::cerr << "[ ERROR ] " << e.what() << std::endl, 1);
+		std::cerr << SS_RED " ERROR " SS_RESET << e.what() << std::endl;
 	}
-	return (ss_print_fd("Closing IRCSERV... Bye, bye!", 1), 0);
+	return (1);
 }

@@ -18,6 +18,18 @@
 
 static bool	g_running = true;
 
+static t_text	ss_client_id(Client *client)
+{
+	t_ss	ss;
+
+	if (not client->getNickname().empty())
+		ss << client->getNickname() << "(fd=" << client->getFd()
+			<< ", " << client->getHostname() << ")";
+	else
+		ss << "fd=" << client->getFd() << ", " << client->getHostname();
+	return (ss.str());
+}
+
 static void	signalHandler(int signum)
 {
 	(void)signum;
@@ -100,8 +112,8 @@ void	Server::setupServer(void)
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_pollFds.push_back(pfd);
-	std::cout << SS_GREEN << SS_BOLD << "Servidor [ " << SERVER_NAME
-		<< " ] a escutar na porta " << _port << SS_RESET << std::endl;
+	std::cout << SS_GREEN << "LISTEN" << SS_RESET << " "
+		<< SERVER_NAME << " porta " << _port << std::endl;
 }
 
 static void	ss_handle_poll_events(Server *server, size_t i,
@@ -191,8 +203,8 @@ void	Server::acceptNewClient(void)
 	else
 		hostname = ip;
 	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
-	std::cout << SS_GREEN << "Novo cliente conectado: fd=" << clientFd
-		<< " host=" << hostname << SS_RESET << std::endl;
+	std::cout << SS_GREEN << "CONNECT" << SS_RESET << " "
+		<< ss_client_id(_clients[clientFd]) << std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
@@ -250,16 +262,19 @@ static void	ss_remove_from_poll(int fd, std::vector<struct pollfd> &pollFds)
 
 void	Server::removeClient(int fd, const t_text &quitReason)
 {
+	t_text	clientInfo;
+
 	if (_clients.find(fd) == _clients.end())
 		return ;
+	clientInfo = ss_client_id(_clients[fd]);
 	ss_broadcast_quit(_clients[fd], _channels, quitReason);
 	ss_remove_from_channels(_clients[fd], _channels);
 	ss_remove_from_poll(fd, _pollFds);
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
-	std::cout << SS_RED << "Cliente desconectado: fd=" << fd << SS_RESET
-		<< std::endl;
+	std::cout << SS_RED << "DISCONNECT" << SS_RESET << " "
+		<< clientInfo << " (" << quitReason << ")" << std::endl;
 }
 
 static bool	ss_find_delimiter(const t_text &buf, size_t &pos, size_t &delimSize)
@@ -485,7 +500,8 @@ void	Server::processCommand(Client *client, const t_text &line)
 
 	if (cleanLine.empty())
 		return ;
-	std::cout << SS_CYAN << ">> " << cleanLine << SS_RESET << std::endl;
+	std::cout << SS_CYAN << "CMD" << SS_RESET << " "
+		<< ss_client_id(client) << ": " << cleanLine << std::endl;
 	spacePos = cleanLine.find(' ');
 	if (spacePos == t_text::npos)
 		cmd = cleanLine;
@@ -503,13 +519,12 @@ void	Server::processCommand(Client *client, const t_text &line)
 
 void	Server::checkTimeouts(void)
 {
-	std::map<int, Client *>::iterator	it;
+	std::map<int, Client *>::iterator	it(_clients.begin());
 	std::vector<int>					toRemove;
 	time_t								now(time(NULL));
 	Client								*client;
 	t_ss								ss;
 
-	it = _clients.begin();
 	while (it != _clients.end())
 	{
 		client = it->second;
@@ -523,9 +538,14 @@ void	Server::checkTimeouts(void)
 				sendTo(client->getFd(), ss.str());
 				client->setPingPending(true);
 				client->setPingSentTime(now);
+				std::cout << SS_YELLOW << "PING" << SS_RESET << " sent to "
+					<< ss_client_id(client) << std::endl;
 			}
 			else if (now - client->getPingSentTime() > 60)
 			{
+				std::cout << SS_RED << "TIMEOUT" << SS_RESET << " "
+					<< ss_client_id(client) << " (no PONG after 120s)"
+					<< std::endl;
 				sendTo(client->getFd(),
 					"ERROR :Closing Link: Ping timeout (120 seconds)\r\n");
 				toRemove.push_back(it->first);
@@ -606,9 +626,9 @@ void	ss_print_fd(const t_text &s, int fd)
 	if (fd == -1)
 		throw (std::runtime_error(s));
 	else if (fd == 1)
-		std::cout << SS_GREEN << s << SS_RESET << std::endl;
+		std::cout << s << std::endl;
 	else if (fd == 2)
-		std::cerr << SS_RED << s << SS_RESET << std::endl;
+		std::cerr << SS_RED << "ERROR" << SS_RESET << " " << s << std::endl;
 	else
 		throw (std::invalid_argument("Invalid fd in SS_PRINT_FD!"));
 }

@@ -12,6 +12,19 @@
 
 #include "../../include/Channel.hpp"
 #include "../../include/Server.hpp"
+#include <iostream>
+
+static t_text	ss_id(Client *c)
+{
+	t_ss	s;
+
+	if (not c->getNickname().empty())
+		s << c->getNickname() << "(fd=" << c->getFd()
+			<< ", " << c->getHostname() << ")";
+	else
+		s << "fd=" << c->getFd() << ", " << c->getHostname();
+	return (s.str());
+}
 
 void	Server::handlePing(Client *client, const t_vector &params)
 {
@@ -23,6 +36,8 @@ void	Server::handlePing(Client *client, const t_vector &params)
 	if (params.empty())
 		return (sendTo(client->getFd(), ss[0].str()));
 	sendTo(client->getFd(), ss[1].str() + params[0] + "\r\n");
+	std::cout << SS_YELLOW << "PING" << SS_RESET << " received from "
+		<< ss_id(client) << std::endl;
 }
 
 void	Server::handlePong(Client *client, const t_vector &params)
@@ -30,6 +45,8 @@ void	Server::handlePong(Client *client, const t_vector &params)
 	(void)params;
 	client->setPingPending(false);
 	client->updateLastActivity();
+	std::cout << SS_GREEN << "PONG" << SS_RESET << " received from "
+		<< ss_id(client) << std::endl;
 }
 
 void	Server::handleQuit(Client *client, const t_vector &params)
