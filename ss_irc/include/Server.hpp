@@ -20,7 +20,7 @@
 # define SS_YELLOW  "\033[33m"
 # define SS_BOLD    "\033[1m"
 # define SS_RESET   "\033[0m"
-# define SS_ALERT   "\033[5;41;97m"
+# define SS_ALERT   "\033[5;31m"
 
 # include <algorithm>
 # include <arpa/inet.h>
