@@ -2,7 +2,7 @@
 
 ## 📋 Description
 
-**ft_irc** is a fully functional IRC (Internet Relay Chat) server implementation written in **C++98**. This project demonstrates proficiency in:
+**ss_irc** is a fully functional IRC (Internet Relay Chat) server implementation written in **C++98**. This project demonstrates proficiency in:
 - Network programming with non-blocking I/O
 - Socket communication (TCP/IP)
 - IRC Protocol (RFC 1459) implementation
@@ -55,7 +55,7 @@ The server allows multiple clients to connect simultaneously, authenticate with 
 ### Compilation
 
 ```bash
-cd /path/to/ft_irc
+cd /path/to/ss_irc
 make
 ```
 
@@ -349,7 +349,7 @@ MODE <nickname> +i  - Get user modes (basic implementation)
 ## 🗂️ Project Structure
 
 ```
-ft_irc/
+ss_irc/
 ├── include/
 │   ├── Channel.hpp          # Channel class definition
 │   ├── Client.hpp           # Client class definition
