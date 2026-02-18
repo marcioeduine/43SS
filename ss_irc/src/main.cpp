@@ -10,9 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cstdlib>
-#include <iostream>
 #include "../include/Server.hpp"
+#include <cstdlib>
 
 int	main(int ac, char **av)
 {

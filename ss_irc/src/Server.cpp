@@ -10,11 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <algorithm>
-#include <csignal>
 #include "../include/Channel.hpp"
 #include "../include/Server.hpp"
-#include <iostream>
+#include <csignal>
 
 static bool	g_running = true;
 
