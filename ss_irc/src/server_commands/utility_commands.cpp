@@ -59,10 +59,10 @@ void	Server::sendWelcome(Client *client)
 {
 	t_ss	ss[4];
 
-	ss[0] << ":Welcome to the IRC network " + client->getPrefix();
+	ss[0] << ":Welcome to the Internet Relay Network " + client->getPrefix();
 	ss[1] << ":Your host is " << SERVER_NAME << ", running version 1.0";
-	ss[2] << ":This server was created today";
-	ss[3] << SERVER_NAME << " 1.0 itkol itkol";
+	ss[2] << ":This server was created 2026/02/18";
+	ss[3] << SERVER_NAME << " 1.0 o itkol";
 	ss_print(client, 001, ss[0].str());
 	ss_print(client, 002, ss[1].str());
 	ss_print(client, 003, ss[2].str());
