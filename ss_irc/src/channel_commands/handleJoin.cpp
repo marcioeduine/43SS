@@ -94,7 +94,7 @@ static void	ss_send_join_info(Server *server, Client *client,
 	else
 		server->ss_print(client, 331, channel_name + ss_message(5));
 	ss_build_names_list(channel, server, names);
-	server->ss_print(client, 353, " = " + channel_name + " :" + names);
+	server->ss_print(client, 353, "= " + channel_name + " :" + names);
 	server->ss_print(client, 366, channel_name + ss_message(6));
 }
 
@@ -120,13 +120,12 @@ static void	ss_process_join(Server *server, Client *client,
 	if ((channel_name[0] xor '#') and (channel_name[0] xor '&'))
 		return (server->ss_print(client, 403, channel_name + ss_message(1)));
 	channel = ss_get_or_create_channel(server, channel_name, channel_key, client);
-	if (not channel->isMember(client))
-	{
-		if (not ss_check_channel_restrictions(server, client, channel,
-				channel_name, channel_key))
-			return ;
-		channel->addMember(client);
-	}
+	if (channel->isMember(client))
+		return ;
+	if (not ss_check_channel_restrictions(server, client, channel,
+			channel_name, channel_key))
+		return ;
+	channel->addMember(client);
 	ss_send_join_info(server, client, channel, channel_name);
 }
 

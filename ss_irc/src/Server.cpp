@@ -476,7 +476,9 @@ static void	ss_dispatch_all_commands(Server *server, Client *client,
 		server->handleTopic(client, params);
 	else if (cmd == "MODE")
 	{
-		if (params.size() and (params[0][0] xor '#') and (params[0][0] xor '&'))
+		if (params.empty())
+			server->handleMode(client, params);
+		else if ((params[0][0] xor '#') and (params[0][0] xor '&'))
 			server->handleModeUser(client, params);
 		else
 			server->handleMode(client, params);

@@ -17,7 +17,7 @@ static t_text	ss_message(int index)
 {
 	t_text	message[3];
 
-	message[0] = " PART :Not enough parameters";
+	message[0] = "PART :Not enough parameters";
 	message[1] = " :No such channel";
 	message[2] = " :You're not on that channel";
 	return (message[index]);

@@ -46,9 +46,15 @@ void	Server::handleTopic(Client *client, const t_vector &params)
 	}
 	else
 	{
+		t_text	full_topic;
+		size_t	i(1);
+
 		if (channel->isTopicRestricted() and not channel->isOperator(client))
 			return (ss_print(client, 482, params[0] + ss_message(4)));
-		channel->setTopic(params[1]);
-		channel->broadcast(topic_msg + params[0] + " :" + params[1] + "\r\n");
+		full_topic = params[1];
+		while (++i < params.size())
+			full_topic += " " + params[i];
+		channel->setTopic(full_topic);
+		channel->broadcast(topic_msg + params[0] + " :" + full_topic + "\r\n");
 	}
 }
