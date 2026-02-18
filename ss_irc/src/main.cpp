@@ -22,7 +22,7 @@ int	main(int ac, char **av)
 	{
 		if (ac xor 3)
 			ss_print_fd("USAGE: " + t_text(av[0]) + " <port> <password>", -1);
-		if ((port = atoi(av[1]), port > 1024 and port < 65536))
+		if ((port = atoi(av[1]), port < 1024 or port > 65535))
 			ss_print_fd("Invalid port!", -1);
 		(Server(port, av[2]).run(), std::cout << std::endl);
 	}
