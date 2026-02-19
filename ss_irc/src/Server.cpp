@@ -13,8 +13,19 @@
 #include "../include/Channel.hpp"
 #include "../include/Server.hpp"
 #include <csignal>
+#include <ctime>
 
 static bool	g_running = true;
+
+static t_text	ss_timestamp(void)
+{
+	char	buf[20];
+	time_t	now(time(NULL));
+	struct tm	*tm(localtime(&now));
+
+	strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", tm);
+	return (buf);
+}
 
 static t_text	ss_client_id(Client *client)
 {
@@ -202,7 +213,8 @@ void	Server::acceptNewClient(void)
 		hostname = ip;
 	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
 	std::cout << SS_GREEN << "CONNECT" << SS_RESET << " "
-		<< ss_client_id(_clients[clientFd]) << std::endl;
+		<< ss_client_id(_clients[clientFd])
+		<< " [" << ss_timestamp() << "]" << std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
@@ -272,7 +284,8 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	delete (_clients[fd]);
 	_clients.erase(fd);
 	std::cout << SS_ALERT << "DISCONNECT" << SS_RESET << " "
-		<< clientInfo << " -> " << quitReason << std::endl;
+		<< clientInfo << " -> " << quitReason
+		<< " [" << ss_timestamp() << "]" << std::endl;
 }
 
 static bool	ss_find_delimiter(const t_text &buf, size_t &pos, size_t &delimSize)
