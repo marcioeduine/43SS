@@ -530,9 +530,11 @@ void	Server::checkTimeouts(void)
 			and (now - client->getLastActivity() > 30))
 		{
 			sendTo(client->getFd(),
-				t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET + "Closing Link: Registration timeout\r\n");
+				t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET
+				+ "Closing Link: Registration timeout\r\n");
 			toRemove.push_back(std::make_pair(it->first,
-				t_text("[TIMEOUT] no auth after 30s")));
+				t_text(SS_ALERT) + "[ TIMEOUT ] " + SS_RESET
+				+ "no auth after 30s"));
 			++it;
 			continue ;
 		}
