@@ -79,7 +79,7 @@ static void	ss_configure_socket(int socket_fd)
 	int	opt(1);
 
 	if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		(close(socket_fd), ss_print_fd("Erro ao configurar socket", -1));
+		(close(socket_fd), ss_print_fd("Failed to configure socket", -1));
 }
 
 static void	ss_bind_socket(int socket_fd, int port)
@@ -91,7 +91,7 @@ static void	ss_bind_socket(int socket_fd, int port)
 	addr.sin_addr.s_addr = INADDR_ANY;
 	addr.sin_port = htons(port);
 	if (bind(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-		(close(socket_fd), ss_print_fd("Erro ao fazer bind", -1));
+		(close(socket_fd), ss_print_fd("Failed to bind socket", -1));
 }
 
 void	Server::setupServer(void)
@@ -100,18 +100,18 @@ void	Server::setupServer(void)
 
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0)
-		return (ss_print_fd("Erro ao Criar o socket", -1));
+		return (ss_print_fd("Failed to create socket", -1));
 	ss_configure_socket(_serverSocket);
 	ss_bind_socket(_serverSocket, _port);
 	if (listen(_serverSocket, SOMAXCONN) < 0)
-		(close(_serverSocket), ss_print_fd("Erro ao escutar", -1));
+		(close(_serverSocket), ss_print_fd("Failed to listen", -1));
 	fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
 	pfd.fd = _serverSocket;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_pollFds.push_back(pfd);
 	std::cout << SS_GREEN << "LISTEN" << SS_RESET << " "
-		<< SERVER_NAME << " porta " << _port << std::endl;
+		<< SERVER_NAME << " port " << _port << std::endl;
 }
 
 static void	ss_handle_poll_events(Server *server, size_t i,
@@ -191,7 +191,7 @@ void	Server::acceptNewClient(void)
 
 	clientFd = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
 	if (clientFd < 0)
-		return (ss_print_fd("Erro ao aceitar cliente", 2));
+		return (ss_print_fd("Failed to accept client", 2));
 	inet_ntop(AF_INET, &(clientAddr.sin_addr), ipbuf, INET_ADDRSTRLEN);
 	ip = ipbuf;
 	if (getnameinfo((struct sockaddr*)&clientAddr, clientLen,
