@@ -551,7 +551,7 @@ def test_auth_timeout():
     c = IRCClient("Timeout")
     c.connect()
     
-    # Enviar comandos inválidos até timeout
+    # Enviar comandos inválidos sem autenticar
     disconnected = False
     try:
         for i in range(15):
@@ -562,17 +562,19 @@ def test_auth_timeout():
         log("Auth timeout", "OK", "Servidor desconectou após comandos inválidos")
     
     if not disconnected:
-        time.sleep(1)
+        # Esperar pelo timeout de registo do servidor (30s)
+        print("  [INFO] A aguardar timeout de registo (~32s)...")
+        time.sleep(32)
         try:
             c.send("PING test")
-            time.sleep(0.5)
+            time.sleep(1)
             res = c.recv()
             if res == "":
-                log("Auth timeout", "OK", "Servidor desconectou")
+                log("Auth timeout", "OK", "Servidor desconectou após timeout")
             else:
                 log("Auth timeout", "WARN", "Servidor ainda conectado")
         except:
-            log("Auth timeout", "OK", "Desconectado")
+            log("Auth timeout", "OK", "Desconectado após timeout")
     
     try:
         c.close()
