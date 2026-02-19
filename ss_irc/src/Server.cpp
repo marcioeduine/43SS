@@ -524,6 +524,18 @@ void	Server::checkTimeouts(void)
 	while (it != _clients.end())
 	{
 		client = it->second;
+		if (not client->isAuthenticated()
+			and (now - client->getLastActivity() > 30))
+		{
+			std::cout << SS_ALERT << " TIMEOUT " << SS_RESET << " "
+				<< ss_client_id(client) << " (no auth after 30s)"
+				<< std::endl;
+			sendTo(client->getFd(),
+				"ERROR :Closing Link: Registration timeout\r\n");
+			toRemove.push_back(it->first);
+			++it;
+			continue ;
+		}
 		if (client->isAuthenticated()
 			and (now - client->getLastActivity() > 60))
 		{
