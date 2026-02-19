@@ -272,7 +272,7 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	delete (_clients[fd]);
 	_clients.erase(fd);
 	std::cout << SS_ALERT << " DISCONNECT " << SS_RESET << " "
-		<< clientInfo << " (" << quitReason << ")" << std::endl;
+		<< clientInfo << " -> " << quitReason << std::endl;
 }
 
 static bool	ss_find_delimiter(const t_text &buf, size_t &pos, size_t &delimSize)
@@ -516,11 +516,11 @@ void	Server::processCommand(Client *client, const t_text &line)
 
 void	Server::checkTimeouts(void)
 {
-	std::map<int, Client *>::iterator	it(_clients.begin());
-	std::vector<int>					toRemove;
-	time_t								now(time(NULL));
-	Client								*client;
-	t_ss								ss;
+	std::map<int, Client *>::iterator		it(_clients.begin());
+	std::vector<std::pair<int, t_text> >	toRemove;
+	time_t									now(time(NULL));
+	Client									*client;
+	t_ss									ss;
 
 	while (it != _clients.end())
 	{
@@ -528,12 +528,10 @@ void	Server::checkTimeouts(void)
 		if (not client->isAuthenticated()
 			and (now - client->getLastActivity() > 30))
 		{
-			std::cout << SS_ALERT << " TIMEOUT " << SS_RESET << " "
-				<< ss_client_id(client) << " (no auth after 30s)"
-				<< std::endl;
 			sendTo(client->getFd(),
 				"ERROR :Closing Link: Registration timeout\r\n");
-			toRemove.push_back(it->first);
+			toRemove.push_back(std::make_pair(it->first,
+				t_text("[TIMEOUT] no auth after 30s")));
 			++it;
 			continue ;
 		}
@@ -552,18 +550,16 @@ void	Server::checkTimeouts(void)
 			}
 			else if (now - client->getPingSentTime() > 60)
 			{
-				std::cout << SS_ALERT << " TIMEOUT " << SS_RESET << " "
-					<< ss_client_id(client) << " (no PONG after 120s)"
-					<< std::endl;
 				sendTo(client->getFd(),
 					"ERROR :Closing Link: Ping timeout (120 seconds)\r\n");
-				toRemove.push_back(it->first);
+				toRemove.push_back(std::make_pair(it->first,
+					t_text("[TIMEOUT] no PONG after 120s")));
 			}
 		}
 		++it;
 	}
 	for (size_t i = 0; i < toRemove.size(); ++i)
-		removeClient(toRemove[i]);
+		removeClient(toRemove[i].first, toRemove[i].second);
 }
 
 Client	*Server::getClient(const t_text &nickname)
@@ -637,7 +633,7 @@ void	ss_print_fd(const t_text &s, int fd)
 	else if (fd == 1)
 		std::cout << s << std::endl;
 	else if (fd == 2)
-		std::cerr << SS_ALERT << " ERROR " << SS_RESET << " " << s << std::endl;
+		std::cerr << SS_ALERT << "[ ERROR ] " << SS_RESET << " " << s << std::endl;
 	else
 		throw (std::invalid_argument("Invalid fd in SS_PRINT_FD!"));
 }

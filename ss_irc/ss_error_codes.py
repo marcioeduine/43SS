@@ -330,10 +330,10 @@ def test_433_nicknameinuse():
     section("ERR 433: ERR_NICKNAMEINUSE")
     c1 = IRCClient("User1")
     c2 = IRCClient("User2")
-    c1.connect(); c1.auth("duplicate1")
+    c1.connect(); c1.auth("dupnick")
     c2.connect()
     c2.send(f"PASS {PASS}")
-    c2.send("NICK duplicate1")  # Mesmo nick
+    c2.send("NICK dupnick")  # Mesmo nick
     c2.send("USER d 0 * :d")
     time.sleep(0.5)
     res = c2.recv()
@@ -347,7 +347,7 @@ def test_441_usernotinchannel():
     section("ERR 441: ERR_USERNOTINCHANNEL")
     c = IRCClient("NotInChan")
     c.connect()
-    c.auth("notinchan1")
+    c.auth("notin1")
     c.send("JOIN #test441")
     time.sleep(0.3); c.recv()
     # Tentar kickar alguém que não está no canal
@@ -479,11 +479,11 @@ def test_471_channelisfull():
     c1.send("MODE #full471 +l 2")  # Limite de 2
     time.sleep(0.3); c1.recv()
     
-    c2.connect(); c2.auth("limit1_471")
+    c2.connect(); c2.auth("lim471")
     c2.send("JOIN #full471")
     time.sleep(0.3); c2.recv(); c1.recv()
     
-    c3.connect(); c3.auth("blocked471")
+    c3.connect(); c3.auth("blk471")
     c3.send("JOIN #full471")
     time.sleep(0.5)
     res = c3.recv()
@@ -505,7 +505,7 @@ def test_473_inviteonlychan():
     c1.send("MODE #invite473 +i")  # Invite only
     time.sleep(0.3); c1.recv()
     
-    c2.connect(); c2.auth("blocked473")
+    c2.connect(); c2.auth("blk473")
     c2.send("JOIN #invite473")
     time.sleep(0.5)
     res = c2.recv()
