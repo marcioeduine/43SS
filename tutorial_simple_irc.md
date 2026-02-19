@@ -2,24 +2,24 @@
 
 Este tutorial explica, passo a passo, como construir um servidor IRC (Internet Relay Chat)
 capaz de se conectar com clientes IRC reais como **irssi**, **HexChat** ou **netcat**.
-Todo o codigo esta em **C++98** e segue o protocolo **RFC 1459**.
+Todo o código está em **C++98** e segue o protocolo **RFC 1459**.
 
 ---
 
-## Indice
+## Índice
 
 1. [Conceitos Fundamentais](#1-conceitos-fundamentais)
-2. [Estrutura do Projeto](#2-estrutura-do-projeto)
+2. [Estrutura do Projecto](#2-estrutura-do-projeto)
 3. [Passo 1 - Criar o Socket TCP](#3-passo-1---criar-o-socket-tcp)
 4. [Passo 2 - Aceitar Clientes com poll()](#4-passo-2---aceitar-clientes-com-poll)
 5. [Passo 3 - Receber e Enviar Dados](#5-passo-3---receber-e-enviar-dados)
 6. [Passo 4 - Parsing do Protocolo IRC](#6-passo-4---parsing-do-protocolo-irc)
-7. [Passo 5 - Autenticacao (PASS, NICK, USER)](#7-passo-5---autenticacao-pass-nick-user)
+7. [Passo 5 - Autenticação (PASS, NICK, USER)](#7-passo-5---autenticacao-pass-nick-user)
 8. [Passo 6 - Canais (JOIN, PART, PRIVMSG)](#8-passo-6---canais-join-part-privmsg)
 9. [Passo 7 - Comandos de Operador (KICK, INVITE, TOPIC, MODE)](#9-passo-7---comandos-de-operador-kick-invite-topic-mode)
 10. [Passo 8 - Timeouts e PING/PONG](#10-passo-8---timeouts-e-pingpong)
 11. [Testar o Servidor](#11-testar-o-servidor)
-12. [Referencia de Codigos de Erro IRC](#12-referencia-de-codigos-de-erro-irc)
+12. [Referência de Códigos de Erro IRC](#12-referencia-de-codigos-de-erro-irc)
 
 ---
 
@@ -27,7 +27,7 @@ Todo o codigo esta em **C++98** e segue o protocolo **RFC 1459**.
 
 ### O que é IRC?
 
-IRC e um protocolo de chat baseado em texto sobre TCP. Funciona assim:
+IRC é um protocolo de chat baseado em texto sobre TCP. Funciona assim:
 
 ```
 Cliente A ---\                    /--- Canal #geral
@@ -37,11 +37,11 @@ Cliente B ---/                    \--- Canal #ajuda
 
 - Os **clientes** conectam-se ao servidor por TCP
 - O servidor gere **canais** (salas de chat) e reencaminha mensagens
-- Toda a comunicacao e texto terminado por `\r\n`
+- Toda a comunicação é texto terminado por `\r\n`
 
 ### O que é TCP?
 
-TCP (Transmission Control Protocol) é um protocolo de comunicação da camada de transporte usado na Internet. Ele garante que os dados enviados de um computador para outro cheguem de forma ordenada, sem erros e sem perdas. O TCP estabelece uma conexão entre o cliente e o servidor antes de transmitir os dados, controla o fluxo das mensagens, faz retransmissão em caso de perda e garante a entrega correta dos pacotes.
+TCP (Transmission Control Protocol) é um protocolo de comunicação da camada de transporte usado na Internet. Ele garante que os dados enviados de um computador para outro cheguem de forma ordenada, sem erros e sem perdas. O TCP estabelece uma conexão entre o cliente e o servidor antes de transmitir os dados, controla o fluxo das mensagens, faz retransmissão em caso de perda e garante a entrega correcta dos pacotes.
 
 Em resumo: TCP é o protocolo que permite comunicação confiável entre dois computadores em rede, como entre um cliente IRC e um servidor IRC.
 
@@ -50,20 +50,20 @@ Em resumo: TCP é o protocolo que permite comunicação confiável entre dois co
 Cada mensagem IRC segue este formato:
 
 ```
-:prefixo COMANDO parametro1 parametro2 :mensagem com espacos\r\n
+:prefixo COMANDO parametro1 parametro2 :mensagem com espaços\r\n
 ```
 
 Exemplos:
 ```
 PASS senha123                           -> cliente envia password
 NICK joao                               -> cliente define nickname
-USER joao 0 * :Joao Silva               -> cliente define username
+USER joao 0 * :João Silva               -> cliente define username
 JOIN #geral                              -> cliente entra no canal
-PRIVMSG #geral :Ola a todos!            -> enviar mensagem
-:joao!joao@host PRIVMSG #geral :Ola!    -> servidor reencaminha
+PRIVMSG #geral :Olá a todos!            -> enviar mensagem
+:joao!joao@host PRIVMSG #geral :Olá!    -> servidor reencaminha
 ```
 
-### Arquitetura: 3 classes principais
+### Arquitectura: 3 classes principais
 
 ```
 Server     -> Gere o socket, poll(), clientes e canais
@@ -73,19 +73,19 @@ Server     -> Gere o socket, poll(), clientes e canais
 
 ---
 
-## 2. Estrutura do Projeto
+## 2. Estrutura do Projecto
 
 ```
 ss_irc/
   include/
-    Server.hpp          <- Definicao da classe Server
-    Client.hpp          <- Definicao da classe Client
-    Channel.hpp         <- Definicao da classe Channel
+    Server.hpp          <- Definição da classe Server
+    Client.hpp          <- Definição da classe Client
+    Channel.hpp         <- Definição da classe Channel
   src/
     main.cpp            <- Ponto de entrada
-    Server.cpp          <- Logica principal do servidor
-    Client.cpp          <- Implementacao do cliente
-    Channel.cpp         <- Implementacao do canal
+    Server.cpp          <- Lógica principal do servidor
+    Client.cpp          <- Implementação do cliente
+    Channel.cpp         <- Implementação do canal
     server_commands/
       handlePass.cpp    <- Comando PASS (password)
       handleNick.cpp    <- Comando NICK (nickname)
@@ -99,7 +99,7 @@ ss_irc/
       handleMode.cpp    <- Comando MODE (modos do canal)
       handleKick.cpp    <- Comando KICK (expulsar utilizador)
       handleInvite.cpp  <- Comando INVITE (convidar utilizador)
-      handleTopic.cpp   <- Comando TOPIC (topico do canal)
+      handleTopic.cpp   <- Comando TOPIC (tópico do canal)
   Makefile
 ```
 
@@ -111,21 +111,21 @@ CXX      = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 ```
 
-Execucao: `./ircserv <porta> <password>`
+Execução: `./ircserv <porta> <password>`
 
 ---
 
 ## 3. Passo 1 - Criar o Socket TCP
 
-O primeiro passo e criar um socket que escuta numa porta. O servidor precisa de:
+O primeiro passo é criar um socket que escuta numa porta. O servidor precisa de:
 
 1. **Criar** o socket (`socket()`)
-2. **Configurar** opcoes (`setsockopt()`)
+2. **Configurar** opções (`setsockopt()`)
 3. **Associar** a uma porta (`bind()`)
-4. **Escutar** conexoes (`listen()`)
-5. **Tornar nao-bloqueante** (`fcntl()`)
+4. **Escutar** conexões (`listen()`)
+5. **Tornar não-bloqueante** (`fcntl()`)
 
-### Codigo: setupServer()
+### Código: setupServer()
 
 ```cpp
 #include <arpa/inet.h>   // sockaddr_in, htons, inet_ntop
@@ -145,10 +145,10 @@ void Server::setupServer(void)
     if (_serverSocket < 0)
         throw std::runtime_error("Failed to create socket");
 
-    // 2. Permitir reutilizar a porta rapidamente apos reiniciar
+    // 2. Permitir reutilizar a porta rapidamente após reiniciar
     setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    // 3. Associar o socket a porta
+    // 3. Associar o socket à porta
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;         // IPv4
     addr.sin_addr.s_addr = INADDR_ANY; // Escutar em todas as interfaces
@@ -156,26 +156,26 @@ void Server::setupServer(void)
     if (bind(_serverSocket, (struct sockaddr*)&addr, sizeof(addr)) < 0)
         throw std::runtime_error("Failed to bind socket");
 
-    // 4. Comecar a escutar (SOMAXCONN = maximo de conexoes pendentes)
+    // 4. Começar a escutar (SOMAXCONN = máximo de conexões pendentes)
     if (listen(_serverSocket, SOMAXCONN) < 0)
         throw std::runtime_error("Failed to listen");
 
-    // 5. Modo nao-bloqueante: accept/recv/send nao ficam a espera
+    // 5. Modo não-bloqueante: accept/recv/send não ficam à espera
     fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
 
     // 6. Adicionar ao poll para monitorizar eventos
     pfd.fd = _serverSocket;
-    pfd.events = POLLIN;  // Queremos saber quando ha dados para ler
+    pfd.events = POLLIN;  // Queremos saber quando há dados para ler
     pfd.revents = 0;
     _pollFds.push_back(pfd);
 }
 ```
 
-### Porque nao-bloqueante?
+### Porquê não-bloqueante?
 
-Sem `O_NONBLOCK`, chamadas como `accept()` e `recv()` bloqueiam o programa ate
-haver dados. Com I/O nao-bloqueante + `poll()`, o servidor pode gerir **multiplos
-clientes numa unica thread** sem ficar preso a espera de nenhum.
+Sem `O_NONBLOCK`, chamadas como `accept()` e `recv()` bloqueiam o programa até
+haver dados. Com I/O não-bloqueante + `poll()`, o servidor pode gerir **múltiplos
+clientes numa única thread** sem ficar preso à espera de nenhum.
 
 ---
 
@@ -183,7 +183,7 @@ clientes numa unica thread** sem ficar preso a espera de nenhum.
 
 ### O loop principal: run()
 
-O coracao do servidor e um loop infinito que usa `poll()` para monitorizar
+O coração do servidor é um loop infinito que usa `poll()` para monitorizar
 todos os file descriptors (o socket do servidor + os sockets dos clientes):
 
 ```cpp
@@ -194,12 +194,12 @@ void Server::run(void)
 
     while (_running)
     {
-        // Esperar ate 10 segundos por eventos em qualquer socket
+        // Esperar até 10 segundos por eventos em qualquer socket
         pollCount = poll(&_pollFds[0], _pollFds.size(), 10000);
         if (pollCount < 0)
             continue;  // Erro (ex: sinal recebido), tentar de novo
 
-        // Iterar de tras para a frente (seguro para remocoes durante iteracao)
+        // Iterar de trás para a frente (seguro para remoções durante iteração)
         i = _pollFds.size();
         while (i--)
         {
@@ -207,14 +207,14 @@ void Server::run(void)
             if (_pollFds[i].revents & POLLIN)
             {
                 if (_pollFds[i].fd == _serverSocket)
-                    acceptNewClient();      // Nova conexao!
+                    acceptNewClient();      // Nova conexão!
                 else
                     handleClientData(_pollFds[i].fd); // Dados de um cliente
             }
-            // Verificar se o socket esta pronto para escrita
+            // Verificar se o socket está pronto para escrita
             if (_pollFds[i].revents & POLLOUT)
                 handleClientWrite(_pollFds[i].fd);
-            // Verificar erros e desconexoes
+            // Verificar erros e desconexões
             if (_pollFds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
                 removeClient(_pollFds[i].fd);
         }
@@ -227,15 +227,15 @@ void Server::run(void)
 
 | Evento    | Significado                                |
 |-----------|--------------------------------------------|
-| `POLLIN`  | Ha dados para ler (ou nova conexao)        |
-| `POLLOUT` | O socket esta pronto para enviar dados     |
+| `POLLIN`  | Há dados para ler (ou nova conexão)        |
+| `POLLOUT` | O socket está pronto para enviar dados     |
 | `POLLHUP` | O cliente desconectou                      |
 | `POLLERR` | Erro no socket                             |
-| `POLLNVAL`| File descriptor invalido                   |
+| `POLLNVAL`| File descriptor inválido                   |
 
-### Aceitar uma nova conexao: acceptNewClient()
+### Aceitar uma nova conexão: acceptNewClient()
 
-Quando `poll()` indica `POLLIN` no socket do servidor, ha um cliente a tentar
+Quando `poll()` indica `POLLIN` no socket do servidor, há um cliente a tentar
 conectar-se:
 
 ```cpp
@@ -246,19 +246,19 @@ void Server::acceptNewClient(void)
     char                hostbuf[NI_MAXHOST];
     int                 clientFd;
 
-    // Aceitar a conexao TCP
+    // Aceitar a conexão TCP
     clientFd = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
     if (clientFd < 0)
-        return;  // Falhou (pode acontecer em modo nao-bloqueante)
+        return;  // Falhou (pode acontecer em modo não-bloqueante)
 
-    // Tornar o socket do cliente nao-bloqueante
+    // Tornar o socket do cliente não-bloqueante
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
     // Resolver o hostname do cliente
     getnameinfo((struct sockaddr*)&clientAddr, clientLen,
                 hostbuf, sizeof(hostbuf), NULL, 0, 0);
 
-    // Criar objeto Client e adicionar ao poll
+    // Criar objecto Client e adicionar ao poll
     struct pollfd pfd;
     pfd.fd = clientFd;
     pfd.events = POLLIN;   // Monitorizar leitura
@@ -274,7 +274,7 @@ void Server::acceptNewClient(void)
 
 Cada cliente novo recebe:
 - Um **file descriptor** (o seu socket)
-- Um **objeto Client** com buffers e estado
+- Um **objecto Client** com buffers e estado
 - Uma entrada no **vector de poll**
 
 ---
@@ -283,7 +283,7 @@ Cada cliente novo recebe:
 
 ### Receber dados: handleClientData()
 
-Quando `poll()` indica `POLLIN` num socket de cliente, ha dados para ler:
+Quando `poll()` indica `POLLIN` num socket de cliente, há dados para ler:
 
 ```cpp
 void Server::handleClientData(int fd)
@@ -291,7 +291,7 @@ void Server::handleClientData(int fd)
     char    buffer[512];
     ssize_t bytesRead;
 
-    // Ler dados do socket (nao-bloqueante)
+    // Ler dados do socket (não-bloqueante)
     bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
     // 0 ou negativo = cliente desconectou ou erro
@@ -304,7 +304,7 @@ void Server::handleClientData(int fd)
     // Acumular no buffer do cliente (mensagens podem chegar fragmentadas)
     client->appendToBuffer(buffer);
 
-    // Protecao contra buffer overflow
+    // Protecção contra buffer overflow
     if (client->getBuffer().size() > 8192)
         return removeClient(fd);
 
@@ -316,32 +316,32 @@ void Server::handleClientData(int fd)
         buf = client->getBuffer();
         pos = buf.find("\r\n");          // Procurar delimitador IRC
         if (pos == std::string::npos)
-            pos = buf.find("\n");        // Netcat envia so \n
+            pos = buf.find("\n");        // Netcat envia só \n
         if (pos == std::string::npos)
             break;                       // Mensagem incompleta, esperar mais
 
         std::string line = buf.substr(0, pos);
-        client->getBuffer().erase(0, pos + 2); // ou +1 se for so \n
+        client->getBuffer().erase(0, pos + 2); // ou +1 se for só \n
         processCommand(client, line);           // Processar o comando IRC
     }
 }
 ```
 
 **Ponto-chave**: Os dados TCP podem chegar fragmentados. Uma mensagem pode vir
-em 2+ chamadas `recv()`, ou 2+ mensagens podem vir numa so. Por isso usamos um
-**buffer de acumulacao** e so processamos quando encontramos `\r\n`.
+em 2+ chamadas `recv()`, ou 2+ mensagens podem vir numa só. Por isso usamos um
+**buffer de acumulação** e só processamos quando encontramos `\r\n`.
 
 ### Enviar dados: handleClientWrite()
 
-Em vez de enviar imediatamente com `send()`, os dados vao para um **buffer de
-saida**. Quando `poll()` indica `POLLOUT`, enviamos:
+Em vez de enviar imediatamente com `send()`, os dados vão para um **buffer de
+saída**. Quando `poll()` indica `POLLOUT`, enviamos:
 
 ```cpp
 void Server::sendTo(int fd, const std::string &msg)
 {
     Client *client = _clients[fd];
-    client->appendToOutBuffer(msg);  // Acumular no buffer de saida
-    enablePollOut(fd);                // Ativar POLLOUT no poll
+    client->appendToOutBuffer(msg);  // Acumular no buffer de saída
+    enablePollOut(fd);                // Activar POLLOUT no poll
 }
 
 void Server::handleClientWrite(int fd)
@@ -356,14 +356,14 @@ void Server::handleClientWrite(int fd)
     {
         client->eraseFromOutBuffer(sent); // Remover bytes enviados
         if (client->getOutBuffer().empty())
-            disablePollOut(fd);           // Desativar POLLOUT
+            disablePollOut(fd);           // Desactivar POLLOUT
     }
 }
 ```
 
-**Porque dois buffers?**
-- **Buffer de entrada** (`_buffer`): acumula dados recebidos ate formar uma linha completa
-- **Buffer de saida** (`_outBuffer`): acumula respostas ate o socket estar pronto para enviar
+**Porquê dois buffers?**
+- **Buffer de entrada** (`_buffer`): acumula dados recebidos até formar uma linha completa
+- **Buffer de saída** (`_outBuffer`): acumula respostas até o socket estar pronto para enviar
 
 ### Desconectar um cliente: removeClient()
 
@@ -379,7 +379,7 @@ void Server::removeClient(int fd, const std::string &reason)
     // Remover de todos os canais
     removeFromAllChannels(client);
 
-    // Remover do poll, fechar socket, libertar memoria
+    // Remover do poll, fechar socket, libertar memória
     removeFromPoll(fd);
     close(fd);
     delete client;
@@ -391,13 +391,13 @@ void Server::removeClient(int fd, const std::string &reason)
 
 ## 6. Passo 4 - Parsing do Protocolo IRC
 
-Cada linha recebida precisa de ser parsed em **comando** e **parametros**:
+Cada linha recebida precisa de ser parsed em **comando** e **parâmetros**:
 
 ```
-PRIVMSG #geral :Ola a todos!
+PRIVMSG #geral :Olá a todos!
   ^       ^        ^
   |       |        +-- trailing (depois de " :")
-  |       +----------- parametro 1
+  |       +----------- parâmetro 1
   +------------------- comando
 ```
 
@@ -410,7 +410,7 @@ void Server::processCommand(Client *client, const std::string &line)
     if (cleanLine.empty())
         return;
 
-    // Separar comando dos parametros
+    // Separar comando dos parâmetros
     std::string cmd, paramStr;
     size_t spacePos = cleanLine.find(' ');
     if (spacePos == std::string::npos)
@@ -421,28 +421,28 @@ void Server::processCommand(Client *client, const std::string &line)
         paramStr = cleanLine.substr(spacePos + 1);
     }
 
-    // Converter comando para maiusculas (IRC e case-insensitive)
+    // Converter comando para maiúsculas (IRC é case-insensitive)
     std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
 
-    // Fazer parse dos parametros
-    // O " :" indica o inicio do "trailing" (pode conter espacos)
+    // Fazer parse dos parâmetros
+    // O " :" indica o início do "trailing" (pode conter espaços)
     std::vector<std::string> params;
     size_t colonPos = paramStr.find(" :");
     if (colonPos != std::string::npos)
     {
-        // Parte antes do " :" -> parametros separados por espaco
-        // Parte depois do " :" -> um unico parametro (trailing)
+        // Parte antes do " :" -> parâmetros separados por espaço
+        // Parte depois do " :" -> um único parâmetro (trailing)
         std::string before = paramStr.substr(0, colonPos);
         std::string trailing = paramStr.substr(colonPos + 2);
-        // split 'before' por espacos -> push_back cada token
+        // split 'before' por espaços -> push_back cada token
         // push_back trailing
     }
     else
     {
-        // Todos os parametros separados por espaco
+        // Todos os parâmetros separados por espaço
     }
 
-    // Verificar autenticacao antes de executar
+    // Verificar autenticação antes de executar
     if (!client->isAuthenticated()
         && cmd != "PASS" && cmd != "NICK" && cmd != "USER"
         && cmd != "QUIT" && cmd != "CAP")
@@ -451,7 +451,7 @@ void Server::processCommand(Client *client, const std::string &line)
         return;
     }
 
-    // Despachar para o handler correto
+    // Despachar para o handler correcto
     if (cmd == "PASS")       handlePass(client, params);
     else if (cmd == "NICK")  handleNick(client, params);
     else if (cmd == "USER")  handleUser(client, params);
@@ -474,7 +474,7 @@ void Server::processCommand(Client *client, const std::string &line)
 Todas as respostas do servidor seguem o formato IRC:
 
 ```
-:nomeservidor CODIGO nickname mensagem\r\n
+:nomeservidor CÓDIGO nickname mensagem\r\n
 ```
 
 ```cpp
@@ -487,7 +487,7 @@ void Server::ss_print(Client *client, int code, const std::string &msg)
 
     ss << ":" << SERVER_NAME << " ";
 
-    // Codigos IRC tem sempre 3 digitos (ex: 001, 042, 433)
+    // Códigos IRC têm sempre 3 dígitos (ex: 001, 042, 433)
     if (code < 10)       ss << "00";
     else if (code < 100) ss << "0";
     ss << code << " " << nick << " " << msg << "\r\n";
@@ -498,18 +498,18 @@ void Server::ss_print(Client *client, int code, const std::string &msg)
 
 ---
 
-## 7. Passo 5 - Autenticacao (PASS, NICK, USER)
+## 7. Passo 5 - Autenticação (PASS, NICK, USER)
 
 Um cliente IRC real (como irssi) envia estes comandos por esta ordem ao conectar:
 
 ```
-CAP LS                        <- Negociacao de capacidades (responder vazio)
+CAP LS                        <- Negociação de capacidades (responder vazio)
 PASS senha123                 <- Password do servidor
 NICK joao                     <- Escolher nickname
-USER joao 0 * :Joao Silva    <- Definir username e realname
+USER joao 0 * :João Silva    <- Definir username e realname
 ```
 
-O cliente so esta **autenticado** quando os tres (PASS + NICK + USER) estiverem completos.
+O cliente só está **autenticado** quando os três (PASS + NICK + USER) estiverem completos.
 
 ### handlePass()
 
@@ -521,7 +521,7 @@ void Server::handlePass(Client *client, const std::vector<std::string> &params)
     else if (client->hasPassword())
         ss_print(client, 462, ":You may not reregister");     // ERR_ALREADYREGISTERED
     else if (params[0] == _password)
-        client->setHasPassword(true);                          // Password correta!
+        client->setHasPassword(true);                          // Password correcta!
     else
         ss_print(client, 464, ":Password incorrect");          // ERR_PASSWDMISMATCH
 }
@@ -534,26 +534,26 @@ void Server::handleNick(Client *client, const std::vector<std::string> &params)
 {
     if (params.empty())
         return ss_print(client, 431, ":No nickname given");
-    if (getClient(params[0]))               // Nickname ja existe?
+    if (getClient(params[0]))               // Nickname já existe?
         return ss_print(client, 433, params[0] + " :Nickname is already in use");
-    if (!isValidNick(params[0]))            // Caracteres invalidos?
+    if (!isValidNick(params[0]))            // Caracteres inválidos?
         return ss_print(client, 432, params[0] + " :Erroneous nickname");
 
     if (client->isAuthenticated())
     {
-        // Ja autenticado -> mudar de nick (notificar canais)
+        // Já autenticado -> mudar de nick (notificar canais)
         std::string oldPrefix = client->getPrefix();
         client->setNickname(params[0]);
         std::string nickMsg = ":" + oldPrefix + " NICK :" + params[0] + "\r\n";
         sendTo(client->getFd(), nickMsg);
-        // Broadcast para todos os canais onde o cliente esta
+        // Broadcast para todos os canais onde o cliente está
     }
     else
     {
         // Ainda em registo
         client->setNickname(params[0]);
         client->setHasNick(true);
-        // Verificar se registo esta completo
+        // Verificar se registo está completo
         if (client->hasPassword() && client->hasNick() && client->hasUser())
         {
             client->setAuthenticated(true);
@@ -563,25 +563,25 @@ void Server::handleNick(Client *client, const std::vector<std::string> &params)
 }
 ```
 
-**Regras de validacao do nickname** (RFC 1459):
-- Maximo 9 caracteres
+**Regras de validação do nickname** (RFC 1459):
+- Máximo 9 caracteres
 - Primeiro caractere deve ser uma letra
-- Restantes: letras, digitos ou caracteres especiais (`-[]\\` `` ` `` `^{}|`)
+- Restantes: letras, dígitos ou caracteres especiais (`-[]\\` `` ` `` `^{}|`)
 
 ### handleUser()
 
 ```cpp
 void Server::handleUser(Client *client, const std::vector<std::string> &params)
 {
-    // USER <username> <modo> <naoUsado> :<realname>
-    // Exemplo: USER joao 0 * :Joao Miguel Silva
+    // USER <username> <modo> <nãoUsado> :<realname>
+    // Exemplo: USER joao 0 * :João Miguel Silva
     if (params.size() < 4)
         return ss_print(client, 461, "USER :Not enough parameters");
     if (client->hasUser())
         return ss_print(client, 462, ":You may not reregister");
 
     client->setUsername(params[0]);
-    client->setRealname(params[3]);  // O trailing apos " :"
+    client->setRealname(params[3]);  // O trailing após " :"
     client->setHasUser(true);
 
     if (client->hasPassword() && client->hasNick() && client->hasUser())
@@ -594,7 +594,7 @@ void Server::handleUser(Client *client, const std::vector<std::string> &params)
 
 ### sendWelcome()
 
-Quando o registo esta completo, o servidor envia as mensagens de boas-vindas:
+Quando o registo está completo, o servidor envia as mensagens de boas-vindas:
 
 ```cpp
 void Server::sendWelcome(Client *client)
@@ -608,8 +608,8 @@ void Server::sendWelcome(Client *client)
 }
 ```
 
-Estas 4 respostas (001-004) sao **obrigatorias** para que clientes IRC reconhecam
-a conexao como bem-sucedida.
+Estas 4 respostas (001-004) são **obrigatórias** para que clientes IRC reconheçam
+a conexão como bem-sucedida.
 
 ### O prefixo do cliente: getPrefix()
 
@@ -636,7 +636,7 @@ std::string Client::getPrefix(void) const
 class Channel
 {
     std::string                _name;       // Ex: "#geral"
-    std::string                _topic;      // Topico do canal
+    std::string                _topic;      // Tópico do canal
     std::string                _key;        // Password do canal (modo +k)
     std::map<int, Client *>    _members;    // Membros (fd -> Client)
     std::map<int, Client *>    _operators;  // Operadores (@)
@@ -644,7 +644,7 @@ class Channel
     bool                       _topicRestricted; // Modo +t
     unsigned int               _limit;      // Modo +l (limite de membros)
     std::vector<std::string>   _invited;    // Lista de convidados
-    Server                     *_server;    // Referencia ao servidor
+    Server                     *_server;    // Referência ao servidor
 };
 ```
 
@@ -666,7 +666,7 @@ void Channel::broadcast(const std::string &message, Client *exclude)
 }
 ```
 
-O parametro `exclude` serve para nao enviar a mensagem de volta ao remetente
+O parâmetro `exclude` serve para não enviar a mensagem de volta ao remetente
 (ex: quando um utilizador envia uma mensagem, todos os outros recebem, menos ele).
 
 ### handleJoin()
@@ -676,7 +676,7 @@ Quando um cliente envia `JOIN #geral`:
 ```cpp
 void Server::handleJoin(Client *client, const std::vector<std::string> &params)
 {
-    // 1. Parse dos canais e keys (podem ser multiplos separados por virgula)
+    // 1. Parse dos canais e keys (podem ser múltiplos separados por vírgula)
     //    JOIN #geral,#ajuda chave1,chave2
 
     // 2. Para cada canal:
@@ -684,14 +684,14 @@ void Server::handleJoin(Client *client, const std::vector<std::string> &params)
 
     if (!channel)
     {
-        // Canal nao existe -> criar e tornar o utilizador operador
+        // Canal não existe -> criar e tornar o utilizador operador
         channel = createChannel(channelName, key);
         channel->addMember(client);
         channel->addOperator(client);  // Primeiro membro = operador
     }
     else
     {
-        // Canal existe -> verificar restricoes
+        // Canal existe -> verificar restrições
         if (channel->isInviteOnly() && !channel->isInvited(client))
             return ss_print(client, 473, channelName + " :Cannot join (+i)");
         if (!channel->getKey().empty() && key != channel->getKey())
@@ -706,7 +706,7 @@ void Server::handleJoin(Client *client, const std::vector<std::string> &params)
     // 3. Notificar todos os membros do canal
     channel->broadcast(":" + client->getPrefix() + " JOIN " + channelName + "\r\n");
 
-    // 4. Enviar topico ao novo membro
+    // 4. Enviar tópico ao novo membro
     if (!channel->getTopic().empty())
         ss_print(client, 332, channelName + " :" + channel->getTopic());
     else
@@ -714,7 +714,7 @@ void Server::handleJoin(Client *client, const std::vector<std::string> &params)
 
     // 5. Enviar lista de membros (NAMES)
     std::string names;
-    // Para cada membro: se e operador, prefixa com @
+    // Para cada membro: se é operador, prefixa com @
     // Ex: "@joao maria @pedro"
     ss_print(client, 353, "= " + channelName + " :" + names);
     ss_print(client, 366, channelName + " :End of NAMES list");
@@ -723,7 +723,7 @@ void Server::handleJoin(Client *client, const std::vector<std::string> &params)
 
 ### handlePart()
 
-Quando um cliente envia `PART #geral :Ate logo!`:
+Quando um cliente envia `PART #geral :Até logo!`:
 
 ```cpp
 void Server::handlePart(Client *client, const std::vector<std::string> &params)
@@ -749,7 +749,7 @@ void Server::handlePart(Client *client, const std::vector<std::string> &params)
 
 ### handlePrivmsg()
 
-O comando PRIVMSG pode enviar para um canal ou diretamente para um utilizador:
+O comando PRIVMSG pode enviar para um canal ou directamente para um utilizador:
 
 ```cpp
 void Server::handlePrivmsg(Client *client, const std::vector<std::string> &params)
@@ -787,13 +787,13 @@ void Server::handlePrivmsg(Client *client, const std::vector<std::string> &param
 
 ## 9. Passo 7 - Comandos de Operador (KICK, INVITE, TOPIC, MODE)
 
-Os operadores de canal (marcados com `@` na lista de membros) tem permissoes especiais.
+Os operadores de canal (marcados com `@` na lista de membros) têm permissões especiais.
 O primeiro utilizador a entrar num canal torna-se automaticamente operador.
 
 ### handleKick()
 
 ```cpp
-// KICK #canal nickname :razao
+// KICK #canal nickname :razão
 void Server::handleKick(Client *client, const std::vector<std::string> &params)
 {
     Channel *channel = getChannel(params[0]);
@@ -828,7 +828,7 @@ void Server::handleInvite(Client *client, const std::vector<std::string> &params
         return ss_print(client, 443, params[0] + " " + params[1]
                         + " :is already on channel");
 
-    channel->inviteClient(target);  // Adicionar a lista de convidados
+    channel->inviteClient(target);  // Adicionar à lista de convidados
     // Enviar convite ao alvo
     sendTo(target->getFd(), ":" + client->getPrefix() + " INVITE "
            + params[0] + " " + params[1] + "\r\n");
@@ -840,15 +840,15 @@ void Server::handleInvite(Client *client, const std::vector<std::string> &params
 ### handleTopic()
 
 ```cpp
-// TOPIC #canal             -> ver topico
-// TOPIC #canal :novo topico -> mudar topico
+// TOPIC #canal             -> ver tópico
+// TOPIC #canal :novo tópico -> mudar tópico
 void Server::handleTopic(Client *client, const std::vector<std::string> &params)
 {
     Channel *channel = getChannel(params[0]);
 
     if (params.size() == 1)
     {
-        // Apenas ver o topico
+        // Apenas ver o tópico
         if (channel->getTopic().empty())
             ss_print(client, 331, params[0] + " :No topic is set");
         else
@@ -856,7 +856,7 @@ void Server::handleTopic(Client *client, const std::vector<std::string> &params)
     }
     else
     {
-        // Mudar o topico
+        // Mudar o tópico
         if (channel->isTopicRestricted() && !channel->isOperator(client))
             return ss_print(client, 482, params[0]
                             + " :You're not channel operator");
@@ -870,37 +870,37 @@ void Server::handleTopic(Client *client, const std::vector<std::string> &params)
 
 ### handleMode()
 
-O modo e o comando mais complexo. Suporta estas flags:
+O modo é o comando mais complexo. Suporta estas flags:
 
 | Modo | Significado                              |
 |------|------------------------------------------|
 | `+i` | Canal invite-only                        |
-| `+t` | So operadores podem mudar o topico       |
+| `+t` | Só operadores podem mudar o tópico       |
 | `+k` | Canal protegido por password             |
 | `+l` | Limite de membros no canal               |
 | `+o` | Dar/remover status de operador           |
 
 ```cpp
-// MODE #canal              -> ver modos atuais
-// MODE #canal +it          -> ativar invite-only e topic-restricted
+// MODE #canal              -> ver modos actuais
+// MODE #canal +it          -> activar invite-only e topic-restricted
 // MODE #canal +k senha     -> definir password
 // MODE #canal +o nickname  -> dar operador
 // MODE #canal -o nickname  -> remover operador
 // MODE #canal +l 10        -> limitar a 10 membros
 ```
 
-A logica de parsing do MODE:
+A lógica de parsing do MODE:
 1. Iterar sobre a string de modos (ex: `+itk-o`)
-2. `+` ativa o modo add, `-` ativa o modo remove
-3. Para modos que precisam de parametro (k, l, o), consumir o proximo parametro
+2. `+` activa o modo add, `-` activa o modo remove
+3. Para modos que precisam de parâmetro (k, l, o), consumir o próximo parâmetro
 4. Aplicar cada modo ao canal
-5. Broadcast da mudanca a todos os membros
+5. Broadcast da mudança a todos os membros
 
 ---
 
 ## 10. Passo 8 - Timeouts e PING/PONG
 
-Para detetar clientes que perderam conexao sem enviar `QUIT`:
+Para detectar clientes que perderam conexão sem enviar `QUIT`:
 
 ```cpp
 void Server::checkTimeouts(void)
@@ -909,7 +909,7 @@ void Server::checkTimeouts(void)
 
     for (cada cliente)
     {
-        // Clientes nao autenticados: 30 segundos para registar
+        // Clientes não autenticados: 30 segundos para registar
         if (!client->isAuthenticated()
             && (now - client->getLastActivity() > 30))
         {
@@ -918,7 +918,7 @@ void Server::checkTimeouts(void)
             continue;
         }
 
-        // Clientes autenticados: verificar inatividade
+        // Clientes autenticados: verificar inactividade
         if (client->isAuthenticated()
             && (now - client->getLastActivity() > 60))
         {
@@ -931,7 +931,7 @@ void Server::checkTimeouts(void)
             }
             else if (now - client->getPingSentTime() > 60)
             {
-                // Sem PONG apos 60 segundos -> desconectar
+                // Sem PONG após 60 segundos -> desconectar
                 sendTo(fd, "ERROR :Ping timeout (120 seconds)\r\n");
                 removeClient(fd);
             }
@@ -940,7 +940,7 @@ void Server::checkTimeouts(void)
 }
 ```
 
-O handler de PONG e simples:
+O handler de PONG é simples:
 
 ```cpp
 void Server::handlePong(Client *client, const std::vector<std::string> &params)
@@ -962,7 +962,7 @@ make
 ./ircserv 6667 senha123
 ```
 
-### Testar com netcat (teste basico)
+### Testar com netcat (teste básico)
 
 ```bash
 nc localhost 6667
@@ -970,8 +970,8 @@ PASS senha123
 NICK teste
 USER teste 0 * :Utilizador Teste
 JOIN #geral
-PRIVMSG #geral :Ola!
-QUIT :Ate logo
+PRIVMSG #geral :Olá!
+QUIT :Até logo
 ```
 
 ### Testar com irssi (cliente IRC real)
@@ -981,7 +981,7 @@ irssi
 /connect localhost 6667 senha123
 /nick meunome
 /join #geral
-/msg #geral Ola a todos!
+/msg #geral Olá a todos!
 /part #geral
 /quit
 ```
@@ -996,44 +996,44 @@ irssi
 
 ---
 
-## 12. Referencia de Codigos de Erro IRC
+## 12. Referência de Códigos de Erro IRC
 
-Codigos usados neste servidor (RFC 1459):
+Códigos usados neste servidor (RFC 1459):
 
-| Codigo | Nome                  | Significado                                    |
+| Código | Nome                  | Significado                                    |
 |--------|-----------------------|------------------------------------------------|
 | 001    | RPL_WELCOME           | Mensagem de boas-vindas                        |
-| 002    | RPL_YOURHOST          | Informacao do servidor                         |
-| 003    | RPL_CREATED           | Data de criacao do servidor                    |
-| 004    | RPL_MYINFO            | Informacao do servidor e modos suportados      |
+| 002    | RPL_YOURHOST          | Informação do servidor                         |
+| 003    | RPL_CREATED           | Data de criação do servidor                    |
+| 004    | RPL_MYINFO            | Informação do servidor e modos suportados      |
 | 221    | RPL_UMODEIS           | Modos do utilizador                            |
-| 324    | RPL_CHANNELMODEIS     | Modos atuais do canal                          |
-| 331    | RPL_NOTOPIC           | Nenhum topico definido                         |
-| 332    | RPL_TOPIC             | Topico do canal                                |
-| 341    | RPL_INVITING          | Confirmacao de convite                         |
+| 324    | RPL_CHANNELMODEIS     | Modos actuais do canal                          |
+| 331    | RPL_NOTOPIC           | Nenhum tópico definido                         |
+| 332    | RPL_TOPIC             | Tópico do canal                                |
+| 341    | RPL_INVITING          | Confirmação de convite                         |
 | 353    | RPL_NAMREPLY          | Lista de membros do canal                      |
 | 366    | RPL_ENDOFNAMES        | Fim da lista de membros                        |
-| 401    | ERR_NOSUCHNICK        | Nickname nao encontrado                        |
-| 403    | ERR_NOSUCHCHANNEL     | Canal nao encontrado                           |
-| 404    | ERR_CANNOTSENDTOCHAN  | Nao pode enviar para o canal                   |
+| 401    | ERR_NOSUCHNICK        | Nickname não encontrado                        |
+| 403    | ERR_NOSUCHCHANNEL     | Canal não encontrado                           |
+| 404    | ERR_CANNOTSENDTOCHAN  | Não pode enviar para o canal                   |
 | 409    | ERR_NOORIGIN          | Sem origem no PING                             |
 | 421    | ERR_UNKNOWNCOMMAND    | Comando desconhecido                           |
 | 431    | ERR_NONICKNAMEGIVEN   | Nenhum nickname fornecido                      |
-| 432    | ERR_ERRONEUSNICKNAME  | Nickname invalido                              |
-| 433    | ERR_NICKNAMEINUSE     | Nickname ja em uso                             |
-| 441    | ERR_USERNOTINCHANNEL  | Utilizador nao esta no canal                   |
-| 442    | ERR_NOTONCHANNEL      | Voce nao esta no canal                         |
-| 443    | ERR_USERONCHANNEL     | Utilizador ja esta no canal                    |
-| 451    | ERR_NOTREGISTERED     | Nao registado                                  |
-| 461    | ERR_NEEDMOREPARAMS    | Parametros insuficientes                       |
-| 462    | ERR_ALREADYREGISTERED | Ja registado                                   |
-| 464    | ERR_PASSWDMISMATCH    | Password incorreta                             |
+| 432    | ERR_ERRONEUSNICKNAME  | Nickname inválido                              |
+| 433    | ERR_NICKNAMEINUSE     | Nickname já em uso                             |
+| 441    | ERR_USERNOTINCHANNEL  | Utilizador não está no canal                   |
+| 442    | ERR_NOTONCHANNEL      | Você não está no canal                         |
+| 443    | ERR_USERONCHANNEL     | Utilizador já está no canal                    |
+| 451    | ERR_NOTREGISTERED     | Não registado                                  |
+| 461    | ERR_NEEDMOREPARAMS    | Parâmetros insuficientes                       |
+| 462    | ERR_ALREADYREGISTERED | Já registado                                   |
+| 464    | ERR_PASSWDMISMATCH    | Password incorrecta                             |
 | 471    | ERR_CHANNELISFULL     | Canal cheio (+l)                               |
-| 473    | ERR_INVITEONLYCHAN    | Canal so por convite (+i)                      |
-| 475    | ERR_BADCHANNELKEY     | Password do canal incorreta (+k)               |
+| 473    | ERR_INVITEONLYCHAN    | Canal só por convite (+i)                      |
+| 475    | ERR_BADCHANNELKEY     | Password do canal incorrecta (+k)               |
 | 482    | ERR_CHANOPRIVSNEEDED  | Precisa de ser operador                        |
-| 484    | ERR_RESTRICTED        | Nao pode mudar o proprio status                |
-| 502    | ERR_USERSDONTMATCH    | Nao pode mudar modos de outros                 |
+| 484    | ERR_RESTRICTED        | Não pode mudar o próprio status                |
+| 502    | ERR_USERSDONTMATCH    | Não pode mudar modos de outros                 |
 
 ---
 
@@ -1048,7 +1048,7 @@ Codigos usados neste servidor (RFC 1459):
    -> Servidor valida e envia RPL_WELCOME (001-004)
 
 4. Cliente envia: JOIN #canal
-   -> Servidor cria/junta ao canal, envia topico + lista de membros
+   -> Servidor cria/junta ao canal, envia tópico + lista de membros
 
 5. Cliente envia: PRIVMSG #canal :mensagem
    -> Servidor reencaminha para todos os membros do canal
@@ -1056,7 +1056,7 @@ Codigos usados neste servidor (RFC 1459):
 6. Cliente envia: QUIT
    -> Servidor notifica canais, remove cliente, fecha socket
 
-7. poll() volta ao passo 2, a espera de mais eventos
+7. poll() volta ao passo 2, à espera de mais eventos
 ```
 
-Este ciclo repete-se infinitamente ate o servidor ser parado (Ctrl+C).
+Este ciclo repete-se infinitamente até o servidor ser parado (Ctrl+C).
