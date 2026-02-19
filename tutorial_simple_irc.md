@@ -25,7 +25,7 @@ Todo o codigo esta em **C++98** e segue o protocolo **RFC 1459**.
 
 ## 1. Conceitos Fundamentais
 
-### O que e IRC?
+### O que é IRC?
 
 IRC e um protocolo de chat baseado em texto sobre TCP. Funciona assim:
 
@@ -38,6 +38,12 @@ Cliente B ---/                    \--- Canal #ajuda
 - Os **clientes** conectam-se ao servidor por TCP
 - O servidor gere **canais** (salas de chat) e reencaminha mensagens
 - Toda a comunicacao e texto terminado por `\r\n`
+
+### O que é TCP?
+
+TCP (Transmission Control Protocol) é um protocolo de comunicação da camada de transporte usado na Internet. Ele garante que os dados enviados de um computador para outro cheguem de forma ordenada, sem erros e sem perdas. O TCP estabelece uma conexão entre o cliente e o servidor antes de transmitir os dados, controla o fluxo das mensagens, faz retransmissão em caso de perda e garante a entrega correta dos pacotes.
+
+Em resumo: TCP é o protocolo que permite comunicação confiável entre dois computadores em rede, como entre um cliente IRC e um servidor IRC.
 
 ### Formato das mensagens IRC
 
