@@ -138,7 +138,7 @@ void Server::setupServer(void)
 {
     struct pollfd       pfd;
     struct sockaddr_in  addr;
-    int                 opt = 1;
+    int                 opt(1);
 
     // 1. Criar socket TCP/IPv4
     _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
