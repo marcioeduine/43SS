@@ -214,7 +214,8 @@ void	Server::acceptNewClient(void)
 	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
 	std::cout << SS_GREEN << "CONNECT" << SS_RESET << " "
 		<< ss_client_id(_clients[clientFd])
-		<< " [" << ss_timestamp() << "]" << std::endl;
+		<< " " << SS_BLUE << "[" << ss_timestamp() << "]" << SS_RESET
+		<< std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
@@ -285,7 +286,8 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	_clients.erase(fd);
 	std::cout << SS_ALERT << "DISCONNECT" << SS_RESET << " "
 		<< clientInfo << " -> " << quitReason
-		<< " [" << ss_timestamp() << "]" << std::endl;
+		<< " " << SS_BLUE << "[" << ss_timestamp() << "]" << SS_RESET
+		<< std::endl;
 }
 
 static bool	ss_find_delimiter(const t_text &buf, size_t &pos, size_t &delimSize)
