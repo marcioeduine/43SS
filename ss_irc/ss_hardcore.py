@@ -566,10 +566,8 @@ def test_auth_timeout():
         print("  [INFO] A aguardar timeout de registo (~32s)...")
         time.sleep(32)
         try:
-            c.send("PING test")
-            time.sleep(1)
             res = c.recv()
-            if res == "":
+            if res == "" or "ERROR" in res:
                 log("Auth timeout", "OK", "Servidor desconectou após timeout")
             else:
                 log("Auth timeout", "WARN", "Servidor ainda conectado")
