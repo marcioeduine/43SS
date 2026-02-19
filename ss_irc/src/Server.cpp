@@ -325,7 +325,8 @@ void	Server::handleClientData(int fd)
 		return ;
 	buffer[bytesRead] = '\0';
 	client = clientIt->second;
-	client->updateLastActivity();
+	if (client->isAuthenticated())
+		client->updateLastActivity();
 	client->appendToBuffer(buffer);
 	if (client->getBuffer().size() > 8192)
 	{
