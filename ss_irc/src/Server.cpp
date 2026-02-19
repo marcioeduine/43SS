@@ -330,7 +330,8 @@ void	Server::handleClientData(int fd)
 	client->appendToBuffer(buffer);
 	if (client->getBuffer().size() > 8192)
 	{
-		sendTo(fd, "ERROR :Input buffer overflow\r\n");
+		sendTo(fd, t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET
+			+ "Input buffer overflow\r\n");
 		return (removeClient(fd));
 	}
 	ss_process_buffer(this, client, fd);
@@ -529,7 +530,7 @@ void	Server::checkTimeouts(void)
 			and (now - client->getLastActivity() > 30))
 		{
 			sendTo(client->getFd(),
-				"ERROR :Closing Link: Registration timeout\r\n");
+				t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET + "Closing Link: Registration timeout\r\n");
 			toRemove.push_back(std::make_pair(it->first,
 				t_text("[TIMEOUT] no auth after 30s")));
 			++it;
@@ -551,9 +552,11 @@ void	Server::checkTimeouts(void)
 			else if (now - client->getPingSentTime() > 60)
 			{
 				sendTo(client->getFd(),
-					"ERROR :Closing Link: Ping timeout (120 seconds)\r\n");
+					t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET
+					+ "Closing Link: Ping timeout (120 seconds)\r\n");
 				toRemove.push_back(std::make_pair(it->first,
-					t_text("[TIMEOUT] no PONG after 120s")));
+					t_text(SS_ALERT) + "[ TIMEOUT ] " + SS_RESET
+					+ "no PONG after 120s"));
 			}
 		}
 		++it;
