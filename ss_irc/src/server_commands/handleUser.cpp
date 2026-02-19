@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/Client.hpp"
 #include "../../include/Server.hpp"
 
 void	Server::handleUser(Client *client, const t_vector &params)
@@ -22,7 +23,8 @@ void	Server::handleUser(Client *client, const t_vector &params)
 		return (ss_print(client, 461, message[0]));
 	if (client->hasUser())
 		return (ss_print(client, 462, message[1]));
-	(client->setUsername(params[0]),
+	(client->setUsername(params[0]), client->setRealname(params[3]),
 	client->setHasUser(true));
-	tryCompleteRegistration(client);
+	if (client->hasPassword() and client->hasNick() and client->hasUser())
+		(client->setAuthenticated(true), sendWelcome(client));
 }

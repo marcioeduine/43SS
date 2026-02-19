@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/Channel.hpp"
 #include "../../include/Server.hpp"
 
 void	Server::handlePing(Client *client, const t_vector &params)
@@ -82,31 +83,4 @@ void	Server::ss_print(Client *client, int error_type, const t_text &s)
 		ss << "0";
 	ss << error_type << ' ' << nick << ' ' << s << "\r\n";
 	sendTo(client->getFd(), ss.str());
-}
-
-void	Server::tryCompleteRegistration(Client *client)
-{
-	if (client->hasPassword() and client->hasNick() and client->hasUser())
-		(client->setAuthenticated(true), sendWelcome(client));
-}
-
-void	ss_parse_csv(const t_text &str, t_vector &out)
-{
-	t_ss	ss(str);
-	t_text	token;
-
-	while (std::getline(ss, token, ','))
-		if (not token.empty())
-			out.push_back(token);
-}
-
-t_text	ss_join_params(const t_vector &params, size_t start)
-{
-	t_text	result;
-
-	if (start < params.size())
-		result = params[start];
-	while (++start < params.size())
-		result += " " + params[start];
-	return (result);
 }

@@ -69,6 +69,7 @@ void	Server::handleNick(Client *client, const t_vector &params)
 	else
 	{
 		(client->setNickname(params[0]), client->setHasNick(true));
-		tryCompleteRegistration(client);
+		if (client->hasPassword() and client->hasNick() and client->hasUser())
+			(client->setAuthenticated(true), sendWelcome(client));
 	}
 }

@@ -53,7 +53,7 @@ void	Server::handlePart(Client *client, const t_vector &params)
 		return (ss_print(client, 461, ss_message(0)));
 	if (params.size() > 1)
 		reason = ss_join_params(params, 1);
-	ss_parse_csv(params[0], channels);
+	ss_parse_list(params[0], channels);
 	it = channels.begin();
 	while (it != channels.end())
 		(ss_process_part(this, client, *it, reason, part_msg), ++it);

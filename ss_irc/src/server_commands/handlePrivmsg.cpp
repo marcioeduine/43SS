@@ -63,7 +63,7 @@ void	Server::handlePrivmsg(Client *client, const t_vector &params)
 		return (ss_print(client, 461, ss_message(0)));
 	fullMsg = ss_join_params(params, 1);
 	(fixed.push_back(params[0]), fixed.push_back(fullMsg));
-	ss_parse_csv(params[0], vec_targets);
+	ss_parse_list(params[0], vec_targets);
 	it = vec_targets.begin();
 	while (it != vec_targets.end())
 	{

@@ -38,9 +38,24 @@ void	Client::setNickname(const t_text &nickname)
 	_nickname = nickname;
 }
 
+const t_text	&Client::getUsername(void) const
+{
+	return (_username);
+}
+
 void	Client::setUsername(const t_text &username)
 {
 	_username = username;
+}
+
+const t_text	&Client::getRealname(void) const
+{
+	return (_realname);
+}
+
+void	Client::setRealname(const t_text &realname)
+{
+	_realname = realname;
 }
 
 const t_text	&Client::getHostname(void) const
@@ -51,6 +66,16 @@ const t_text	&Client::getHostname(void) const
 void	Client::setHostname(const t_text &hostname)
 {
 	_hostname = hostname;
+}
+
+const t_text	&Client::getServername(void) const
+{
+	return (_servername);
+}
+
+void	Client::setServername(const t_text &servername)
+{
+	_servername = servername;
 }
 
 bool	Client::isAuthenticated(void) const
@@ -108,6 +133,11 @@ t_text	&Client::getBuffer(void)
 	return (_buffer);
 }
 
+void	Client::clearBuffer(void)
+{
+	_buffer.clear();
+}
+
 void	Client::appendToOutBuffer(const t_text &data)
 {
 	_outBuffer += data;
@@ -121,6 +151,11 @@ const t_text	&Client::getOutBuffer(void) const
 void	Client::eraseFromOutBuffer(size_t bytes)
 {
 	_outBuffer.erase(0, bytes);
+}
+
+void	Client::clearOutBuffer(void)
+{
+	_outBuffer.clear();
 }
 
 t_text	Client::getPrefix(void) const

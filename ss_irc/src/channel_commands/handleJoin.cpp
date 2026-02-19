@@ -123,7 +123,7 @@ void	Server::handleJoin(Client *client, const t_vector &params)
 
 	if (params.empty())
 		return (ss_print(client, 461, ss_message(0)));
-	ss_parse_csv(params[0], vec_channels);
+	ss_parse_list(params[0], vec_channels);
 	ss_parse_keys(params, keys);
 	while (++i < vec_channels.size())
 	{

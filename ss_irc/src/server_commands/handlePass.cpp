@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/Client.hpp"
 #include "../../include/Server.hpp"
 
 void	Server::handlePass(Client *client, const t_vector &params)

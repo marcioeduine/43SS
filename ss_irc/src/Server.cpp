@@ -175,6 +175,7 @@ static void	ss_setup_new_client(int clientFd, const char *host,
 	pollFds.push_back(pfd);
 	client = new Client(clientFd);
 	client->setHostname(host);
+	client->setServername(SERVER_NAME);
 	clients[clientFd] = client;
 }
 
@@ -596,9 +597,24 @@ int		Server::getServerSocket(void) const
 	return (_serverSocket);
 }
 
+t_text	Server::getPassword(void) const
+{
+	return (_password);
+}
+
 std::map<int, Client *>	&Server::getClients(void)
 {
 	return (_clients);
+}
+
+std::vector<struct pollfd>	&Server::getPollFds(void)
+{
+	return (_pollFds);
+}
+
+void	Server::stop(void)
+{
+	_running = false;
 }
 
 void	ss_print_fd(const t_text &s, int fd)
@@ -611,4 +627,26 @@ void	ss_print_fd(const t_text &s, int fd)
 		std::cerr << SS_ALERT << " ERROR " << SS_RESET << " " << s << std::endl;
 	else
 		throw (std::invalid_argument("Invalid fd in SS_PRINT_FD!"));
+}
+
+void	ss_parse_list(const t_text &str, t_vector &out)
+{
+	t_ss	ss(str);
+	t_text	token;
+
+	while (std::getline(ss, token, ','))
+		if (not token.empty())
+			out.push_back(token);
+}
+
+t_text	ss_join_params(const t_vector &params, size_t from)
+{
+	t_text	result;
+	size_t	i(from + 1);
+
+	if (from < params.size())
+		result = params[from];
+	while (i < params.size())
+		result += " " + params[i++];
+	return (result);
 }

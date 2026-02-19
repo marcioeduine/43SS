@@ -18,6 +18,7 @@
 # define SS_RED     "\033[31m"
 # define SS_GREEN   "\033[32m"
 # define SS_YELLOW  "\033[33m"
+# define SS_BOLD    "\033[1m"
 # define SS_RESET   "\033[0m"
 # define SS_ALERT   "\033[5;31m"
 
@@ -58,9 +59,12 @@ class	Server
 		~Server(void);
 
 		void	run(void);
+		void	stop(void);
 
 		int							getServerSocket(void) const;
+		t_text						getPassword(void) const;
 		std::map<int, Client *>		&getClients(void);
+		std::vector<struct pollfd>	&getPollFds(void);
 
 		Channel	*getChannel(const t_text &name);
 		Channel	*createChannel(const t_text &name, const t_text &key);
@@ -76,7 +80,6 @@ class	Server
 		void	sendTo(int fd, const t_text &msg);
 		void	enablePollOut(int fd);
 		void	sendWelcome(Client *client);
-		void	tryCompleteRegistration(Client *client);
 		void	ss_print(Client *client, int code, const t_text &msg);
 
 		void	processCommand(Client *client, const t_text &line);
@@ -99,7 +102,7 @@ class	Server
 };
 
 void	ss_print_fd(const t_text &s, int fd);
-void	ss_parse_csv(const t_text &str, t_vector &out);
-t_text	ss_join_params(const t_vector &params, size_t start);
+void	ss_parse_list(const t_text &str, t_vector &out);
+t_text	ss_join_params(const t_vector &params, size_t from);
 
 #endif
