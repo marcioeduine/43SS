@@ -271,7 +271,7 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
-	std::cout << SS_ALERT << " DISCONNECT " << SS_RESET << " "
+	std::cout << SS_ALERT << "DISCONNECT" << SS_RESET << " "
 		<< clientInfo << " -> " << quitReason << std::endl;
 }
 
