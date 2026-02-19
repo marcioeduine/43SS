@@ -21,10 +21,10 @@ static t_text	ss_client_id(Client *client)
 	t_ss	ss;
 
 	if (not client->getNickname().empty())
-		ss << client->getNickname() << "(fd=" << client->getFd()
-			<< ", " << client->getHostname() << ")";
+		ss << client->getNickname() << "([ FD=" << client->getFd()
+			<< " ] -> " << client->getHostname() << ")";
 	else
-		ss << "fd=" << client->getFd() << ", " << client->getHostname();
+		ss << "[ FD=" << client->getFd() << " ] -> " << client->getHostname();
 	return (ss.str());
 }
 
