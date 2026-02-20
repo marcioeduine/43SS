@@ -82,7 +82,7 @@ void	Channel::setLimit(unsigned int limit)
 
 std::vector<t_text>	Channel::getMembersNicknames(void) const
 {
-	std::vector<t_text>				nicknames;
+	std::vector<t_text>						nicknames;
 	std::map<int, Client *>::const_iterator	it(_members.begin());
 
 	while (it != _members.end())

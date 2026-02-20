@@ -17,6 +17,12 @@
 
 static bool	g_running = true;
 
+static void	signalHandler(int signum)
+{
+	(void)signum;
+	g_running = false;
+}
+
 static t_text	ss_timestamp(void)
 {
 	char	buf[20];
@@ -37,12 +43,6 @@ static t_text	ss_client_id(Client *client)
 	else
 		ss << "[ FD=" << client->getFd() << " ] -> " << client->getHostname();
 	return (ss.str());
-}
-
-static void	signalHandler(int signum)
-{
-	(void)signum;
-	g_running = false;
 }
 
 Server::Server(int port, const t_text &password)
@@ -106,63 +106,69 @@ static void	ss_bind_socket(int socket_fd, int port)
 		(close(socket_fd), ss_print_fd("Failed to bind socket", -1));
 }
 
-void Server::setupServer(void)
+void	Server::setupServer(void)
 {
-       _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-       if (_serverSocket < 0)
-	       return (ss_print_fd("Failed to create socket", -1));
-       ss_configure_socket(_serverSocket);
-       ss_bind_socket(_serverSocket, _port);
-       if (listen(_serverSocket, SOMAXCONN) < 0)
-	       (close(_serverSocket), ss_print_fd("Failed to listen", -1));
-       fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
-       _epollFd = epoll_create1(0);
-       if (_epollFd < 0)
-	       (close(_serverSocket), ss_print_fd("Failed to create epoll fd", -1));
-       struct epoll_event ev;
-       ev.events = EPOLLIN;
-       ev.data.fd = _serverSocket;
-       if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverSocket, &ev) < 0)
-	       (close(_serverSocket), close(_epollFd), ss_print_fd("Failed to add server socket to epoll", -1));
-       std::cout << SS_GREEN << "LISTEN" << SS_RESET << " "
-	       << SERVER_NAME << " port " << _port << std::endl;
+	struct epoll_event	ev;
+	t_text				msg("Failed to add server socket to epoll");
+
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket < 0)
+		return (ss_print_fd("Failed to create socket", -1));
+	ss_configure_socket(_serverSocket);
+	ss_bind_socket(_serverSocket, _port);
+	if (listen(_serverSocket, SOMAXCONN) < 0)
+		(close(_serverSocket), ss_print_fd("Failed to listen", -1));
+	fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
+	_epollFd = epoll_create1(0);
+	if (_epollFd < 0)
+		(close(_serverSocket), ss_print_fd("Failed to create epoll fd", -1));
+	ev.events = EPOLLIN;
+	ev.data.fd = _serverSocket;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverSocket, &ev) < 0)
+		(close(_serverSocket), close(_epollFd), ss_print_fd(msg, -1));
+	std::cout << SS_GREEN << "LISTEN" << SS_RESET << " " << SERVER_NAME
+		<< " port " << _port << std::endl;
 }
 
 void	Server::run(void)
 {
-	const int MAX_EVENTS = 64;
-	struct epoll_event events[MAX_EVENTS];
-	int nfd, i;
+	int					max_events(64);
+	struct epoll_event	events[max_events];
+	int					nfd;
+	int					fd;
+	int					i;
+
 	while (_running and g_running)
 	{
-		nfd = epoll_wait(_epollFd, events, MAX_EVENTS, 10000);
-		if (nfd < 0)
-			continue;
-		for (i = 0; i < nfd; ++i)
+		nfd = epoll_wait(_epollFd, events, max_events, 10000);
+		if (nfd >= 0)
 		{
-			int fd = events[i].data.fd;
-			if (fd == _serverSocket && (events[i].events & EPOLLIN))
-				acceptNewClient();
-			else
+			i = -1;
+			while (++i < nfd)
 			{
-				if (events[i].events & EPOLLIN)
-					handleClientData(fd);
-				if (events[i].events & EPOLLOUT)
-					handleClientWrite(fd);
-				if (events[i].events & (EPOLLHUP | EPOLLERR))
-					removeClient(fd);
+				fd = events[i].data.fd;
+				if (fd == _serverSocket and (events[i].events & EPOLLIN))
+					acceptNewClient();
+				else
+				{
+					if (events[i].events & EPOLLIN)
+						handleClientData(fd);
+					if (events[i].events & EPOLLOUT)
+						handleClientWrite(fd);
+					if (events[i].events & (EPOLLHUP | EPOLLERR))
+						removeClient(fd);
+				}
 			}
+			checkTimeouts();
 		}
-		checkTimeouts();
 	}
 }
 
 static void	ss_setup_new_client(int clientFd, const char *host,
-	std::map<int, Client *> &clients,
-	int epollFd)
+	std::map<int, Client *> &clients, int epollFd)
 {
-	struct epoll_event ev;
-	Client			*client;
+	struct epoll_event	ev;
+	Client				*client;
 
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	ev.events = EPOLLIN;
@@ -190,17 +196,15 @@ void	Server::acceptNewClient(void)
 		return (ss_print_fd("Failed to accept client", 2));
 	inet_ntop(AF_INET, &(clientAddr.sin_addr), ipbuf, INET_ADDRSTRLEN);
 	ip = ipbuf;
-	if (getnameinfo((struct sockaddr*)&clientAddr, clientLen,
-		hostbuf, sizeof(hostbuf), NULL, 0, 0) == 0
-		and t_text(hostbuf) != ip)
+	if (not getnameinfo((struct sockaddr*)&clientAddr, clientLen, hostbuf,
+		sizeof(hostbuf), NULL, 0, 0) and t_text(hostbuf) != ip)
 		hostname = hostbuf;
 	else
 		hostname = ip;
 	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _epollFd);
 	std::cout << SS_GREEN << "CONNECT" << SS_RESET << " "
-		<< ss_client_id(_clients[clientFd])
-		<< " " << SS_BLUE << "[" << ss_timestamp() << "]" << SS_RESET
-		<< std::endl;
+		<< ss_client_id(_clients[clientFd]) << " " << SS_BLUE << "["
+		<< ss_timestamp() << "]" << SS_RESET << std::endl;
 }
 
 static void	ss_broadcast_quit(Client *client,
@@ -241,11 +245,6 @@ static void	ss_remove_from_channels(Client *client,
 	}
 }
 
-static void ss_remove_from_epoll(int fd, int epollFd)
-{
-       epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
-}
-
 void	Server::removeClient(int fd, const t_text &quitReason)
 {
 	t_text	clientInfo;
@@ -255,7 +254,7 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	clientInfo = ss_client_id(_clients[fd]);
 	ss_broadcast_quit(_clients[fd], _channels, quitReason);
 	ss_remove_from_channels(_clients[fd], _channels);
-	ss_remove_from_epoll(fd, _epollFd);
+	epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL);
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
@@ -329,7 +328,7 @@ void	Server::handleClientData(int fd)
 
 static void	ss_disable_epollout(int fd, int epollFd)
 {
-	struct epoll_event ev;
+	struct epoll_event	ev;
 
 	ev.events = EPOLLIN;
 	ev.data.fd = fd;
@@ -364,7 +363,7 @@ void	Server::handleClientWrite(int fd)
 
 void	Server::enablePollOut(int fd)
 {
-	struct epoll_event ev;
+	struct epoll_event	ev;
 
 	ev.events = EPOLLIN | EPOLLOUT;
 	ev.data.fd = fd;
@@ -421,11 +420,6 @@ static bool	ss_check_auth(Client *client, const t_text &cmd)
 	return (client->isAuthenticated() or cmd == "PASS" or cmd == "NICK"
 		or cmd == "USER" or cmd == "QUIT" or cmd == "CAP" or cmd == "PING"
 		or cmd == "PONG");
-}
-
-static void	ss_handle_unauth(Server *server, Client *client)
-{
-	server->ss_print(client, 451, ":You have not registered");
 }
 
 static void	ss_dispatch_all_commands(Server *server, Client *client,
@@ -491,7 +485,7 @@ void	Server::processCommand(Client *client, const t_text &line)
 	std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
 	ss_parse_params(paramStr, params);
 	if (not ss_check_auth(client, cmd))
-		return (ss_handle_unauth(this, client));
+		return (ss_print(client, 451, ":You have not registered"));
 	ss_dispatch_all_commands(this, client, cmd, params);
 }
 
@@ -502,6 +496,7 @@ void	Server::checkTimeouts(void)
 	time_t									now(time(NULL));
 	Client									*client;
 	t_ss									ss;
+	size_t									i(0);
 
 	while (it != _clients.end())
 	{
@@ -543,7 +538,7 @@ void	Server::checkTimeouts(void)
 		}
 		++it;
 	}
-	for (size_t i = 0; i < toRemove.size(); ++i)
+	while (++i < toRemove.size())
 		removeClient(toRemove[i].first, toRemove[i].second);
 }
 

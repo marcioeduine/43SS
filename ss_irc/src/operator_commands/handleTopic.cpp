@@ -28,6 +28,7 @@ static t_text	ss_message(int index)
 void	Server::handleTopic(Client *client, const t_vector &params)
 {
 	Channel	*channel;
+	t_text	full_topic;
 	t_text	topic_msg(":" + client->getPrefix() + " TOPIC ");
 
 	if (params.empty())
@@ -46,8 +47,6 @@ void	Server::handleTopic(Client *client, const t_vector &params)
 	}
 	else
 	{
-		t_text	full_topic;
-
 		if (channel->isTopicRestricted() and not channel->isOperator(client))
 			return (ss_print(client, 482, params[0] + ss_message(4)));
 		full_topic = ss_join_params(params, 1);
