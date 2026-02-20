@@ -83,6 +83,7 @@ Server::~Server(void)
 	ss_cleanup_clients(_clients);
 	ss_cleanup_channels(_channels);
 	close(_serverSocket);
+	close(_epollFd);
 }
 
 static void	ss_configure_socket(int socket_fd)
