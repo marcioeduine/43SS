@@ -326,6 +326,16 @@ void	Server::handleClientData(int fd)
 	ss_process_buffer(this, client, fd);
 }
 
+static void	ss_disable_epollout(int fd, int epollFd)
+{
+	struct epoll_event ev;
+
+	ev.events = EPOLLIN;
+	ev.data.fd = fd;
+	if (epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &ev) < 0)
+		ss_print_fd("Failed to modify epoll for client", 2);
+}
+
 void	Server::handleClientWrite(int fd)
 {
 	std::map<int, Client *>::iterator	it(_clients.find(fd));
@@ -347,23 +357,18 @@ void	Server::handleClientWrite(int fd)
 			return ;
 		it->second->eraseFromOutBuffer(sent);
 		if (it->second->getOutBuffer().empty())
-			ss_disable_pollout(fd, _pollFds);
+			ss_disable_epollout(fd, _epollFd);
 	}
 }
 
 void	Server::enablePollOut(int fd)
 {
-	std::vector<struct pollfd>::iterator	it(_pollFds.begin());
+	struct epoll_event ev;
 
-	while (it != _pollFds.end())
-	{
-		if (it->fd == fd)
-		{
-			it->events |= POLLOUT;
-			break ;
-		}
-		++it;
-	}
+	ev.events = EPOLLIN | EPOLLOUT;
+	ev.data.fd = fd;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, fd, &ev) < 0)
+		ss_print_fd("Failed to modify epoll for client", 2);
 }
 
 void	Server::sendTo(int fd, const t_text &msg)

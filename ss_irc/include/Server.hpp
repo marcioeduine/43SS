@@ -33,6 +33,7 @@
 # include <netdb.h>
 # include <poll.h>
 # include <sstream>
+# include <sys/epoll.h>
 # include <unistd.h>
 # include <vector>
 
