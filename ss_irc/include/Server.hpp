@@ -48,7 +48,7 @@ class	Server
 		int							_port;
 		t_text						_password;
 		int							_serverSocket;
-		std::vector<struct pollfd>	_pollFds;
+		int							_epollFd;
 		std::map<int, Client *>		_clients;
 		std::map<t_text, Channel *>	_channels;
 		bool						_running;
@@ -65,7 +65,7 @@ class	Server
 		int							getServerSocket(void) const;
 		t_text						getPassword(void) const;
 		std::map<int, Client *>		&getClients(void);
-		std::vector<struct pollfd>	&getPollFds(void);
+		int							getEpollFd(void) const;
 
 		Channel	*getChannel(const t_text &name);
 		Channel	*createChannel(const t_text &name, const t_text &key);

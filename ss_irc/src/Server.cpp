@@ -105,68 +105,52 @@ static void	ss_bind_socket(int socket_fd, int port)
 		(close(socket_fd), ss_print_fd("Failed to bind socket", -1));
 }
 
-void	Server::setupServer(void)
+void Server::setupServer(void)
 {
-	struct pollfd	pfd;
-
-	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_serverSocket < 0)
-		return (ss_print_fd("Failed to create socket", -1));
-	ss_configure_socket(_serverSocket);
-	ss_bind_socket(_serverSocket, _port);
-	if (listen(_serverSocket, SOMAXCONN) < 0)
-		(close(_serverSocket), ss_print_fd("Failed to listen", -1));
-	fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
-	pfd.fd = _serverSocket;
-	pfd.events = POLLIN;
-	pfd.revents = 0;
-	_pollFds.push_back(pfd);
-	std::cout << SS_GREEN << "LISTEN" << SS_RESET << " "
-		<< SERVER_NAME << " port " << _port << std::endl;
-}
-
-static void	ss_handle_poll_events(Server *server, size_t i,
-	std::vector<struct pollfd> &pollFds)
-{
-	if (i >= pollFds.size())
-		return ;
-	if (pollFds[i].revents & POLLIN)
-	{
-		if (pollFds[i].fd == server->getServerSocket())
-			server->acceptNewClient();
-		else
-			server->handleClientData(pollFds[i].fd);
-	}
-}
-
-static void	ss_handle_write_and_errors(Server *server, size_t i,
-	std::vector<struct pollfd> &pollFds)
-{
-	if (i >= pollFds.size())
-		return ;
-	if (pollFds[i].revents & POLLOUT)
-		server->handleClientWrite(pollFds[i].fd);
-	if (i >= pollFds.size())
-		return ;
-	if (pollFds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
-		server->removeClient(pollFds[i].fd);
+       _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+       if (_serverSocket < 0)
+	       return (ss_print_fd("Failed to create socket", -1));
+       ss_configure_socket(_serverSocket);
+       ss_bind_socket(_serverSocket, _port);
+       if (listen(_serverSocket, SOMAXCONN) < 0)
+	       (close(_serverSocket), ss_print_fd("Failed to listen", -1));
+       fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
+       _epollFd = epoll_create1(0);
+       if (_epollFd < 0)
+	       (close(_serverSocket), ss_print_fd("Failed to create epoll fd", -1));
+       struct epoll_event ev;
+       ev.events = EPOLLIN;
+       ev.data.fd = _serverSocket;
+       if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverSocket, &ev) < 0)
+	       (close(_serverSocket), close(_epollFd), ss_print_fd("Failed to add server socket to epoll", -1));
+       std::cout << SS_GREEN << "LISTEN" << SS_RESET << " "
+	       << SERVER_NAME << " port " << _port << std::endl;
 }
 
 void	Server::run(void)
 {
-	int		pollCount;
-	size_t	i;
-
+	const int MAX_EVENTS = 64;
+	struct epoll_event events[MAX_EVENTS];
+	int nfd, i;
 	while (_running and g_running)
 	{
-		pollCount = poll(&_pollFds[0], _pollFds.size(), 10000);
-		if (pollCount < 0)
-			continue ;
-		i = _pollFds.size();
-		while (i--)
+		nfd = epoll_wait(_epollFd, events, MAX_EVENTS, 10000);
+		if (nfd < 0)
+			continue;
+		for (i = 0; i < nfd; ++i)
 		{
-			ss_handle_poll_events(this, i, _pollFds);
-			ss_handle_write_and_errors(this, i, _pollFds);
+			int fd = events[i].data.fd;
+			if (fd == _serverSocket && (events[i].events & EPOLLIN))
+				acceptNewClient();
+			else
+			{
+				if (events[i].events & EPOLLIN)
+					handleClientData(fd);
+				if (events[i].events & EPOLLOUT)
+					handleClientWrite(fd);
+				if (events[i].events & (EPOLLHUP | EPOLLERR))
+					removeClient(fd);
+			}
 		}
 		checkTimeouts();
 	}
@@ -174,16 +158,16 @@ void	Server::run(void)
 
 static void	ss_setup_new_client(int clientFd, const char *host,
 	std::map<int, Client *> &clients,
-	std::vector<struct pollfd> &pollFds)
+	int epollFd)
 {
-	struct pollfd	pfd;
+	struct epoll_event ev;
 	Client			*client;
 
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
-	pfd.fd = clientFd;
-	pfd.events = POLLIN;
-	pfd.revents = 0;
-	pollFds.push_back(pfd);
+	ev.events = EPOLLIN;
+	ev.data.fd = clientFd;
+	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientFd, &ev) < 0)
+		 (close(clientFd), ss_print_fd("Failed to add client fd to epoll", -1));
 	client = new Client(clientFd);
 	client->setHostname(host);
 	client->setServername(SERVER_NAME);
@@ -211,7 +195,7 @@ void	Server::acceptNewClient(void)
 		hostname = hostbuf;
 	else
 		hostname = ip;
-	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _pollFds);
+	ss_setup_new_client(clientFd, hostname.c_str(), _clients, _epollFd);
 	std::cout << SS_GREEN << "CONNECT" << SS_RESET << " "
 		<< ss_client_id(_clients[clientFd])
 		<< " " << SS_BLUE << "[" << ss_timestamp() << "]" << SS_RESET
@@ -256,19 +240,9 @@ static void	ss_remove_from_channels(Client *client,
 	}
 }
 
-static void	ss_remove_from_poll(int fd, std::vector<struct pollfd> &pollFds)
+static void ss_remove_from_epoll(int fd, int epollFd)
 {
-	std::vector<struct pollfd>::iterator	it(pollFds.begin());
-
-	while (it != pollFds.end())
-	{
-		if (it->fd == fd)
-		{
-			pollFds.erase(it);
-			break ;
-		}
-		++it;
-	}
+       epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, NULL);
 }
 
 void	Server::removeClient(int fd, const t_text &quitReason)
@@ -280,7 +254,7 @@ void	Server::removeClient(int fd, const t_text &quitReason)
 	clientInfo = ss_client_id(_clients[fd]);
 	ss_broadcast_quit(_clients[fd], _channels, quitReason);
 	ss_remove_from_channels(_clients[fd], _channels);
-	ss_remove_from_poll(fd, _pollFds);
+	ss_remove_from_epoll(fd, _epollFd);
 	close(fd);
 	delete (_clients[fd]);
 	_clients.erase(fd);
@@ -350,21 +324,6 @@ void	Server::handleClientData(int fd)
 		return (removeClient(fd));
 	}
 	ss_process_buffer(this, client, fd);
-}
-
-static void	ss_disable_pollout(int fd, std::vector<struct pollfd> &pollFds)
-{
-	std::vector<struct pollfd>::iterator	it(pollFds.begin());
-
-	while (it != pollFds.end())
-	{
-		if (it->fd == fd)
-		{
-			it->events &= ~POLLOUT;
-			break ;
-		}
-		++it;
-	}
 }
 
 void	Server::handleClientWrite(int fd)
@@ -636,9 +595,9 @@ std::map<int, Client *>	&Server::getClients(void)
 	return (_clients);
 }
 
-std::vector<struct pollfd>	&Server::getPollFds(void)
+int     Server::getEpollFd(void) const
 {
-	return (_pollFds);
+       return _epollFd;
 }
 
 void	Server::stop(void)
