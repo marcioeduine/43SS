@@ -496,7 +496,7 @@ void	Server::checkTimeouts(void)
 	time_t									now(time(NULL));
 	Client									*client;
 	t_ss									ss;
-	size_t									i(0);
+	size_t									i(-1);
 
 	while (it != _clients.end())
 	{
