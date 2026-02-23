@@ -2,7 +2,7 @@
 
 ## Description
 
-An IRC server written in C++98 that handles multiple clients simultaneously using `poll()` for non-blocking I/O. Clients authenticate with a password, set a nickname and username, then can join channels and exchange messages. Channel operators can kick, invite, set topics and manage channel modes (+i, +t, +k, +o, +l).
+An IRC server written in C++98 that handles multiple clients simultaneously using `epoll()` for non-blocking I/O. Clients authenticate with a password, set a nickname and username, then can join channels and exchange messages. Channel operators can kick, invite, set topics and manage channel modes (+i, +t, +k, +o, +l).
 
 Reference client: **irssi**. Also tested with **nc** (netcat).
 
@@ -45,7 +45,7 @@ irssi
 
 - [RFC 1459 — Internet Relay Chat Protocol](https://www.ietf.org/rfc/rfc1459.txt)
 - [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/)
-- `man poll`, `man socket`, `man fcntl`, `man send`, `man recv`
+- `man epoll`, `man epoll_ctl`, `man epoll_wait`, `man bind`, `man accept`, `man recv`, `man send`, `man tpc`, `man socket`, `man listen`...
 
 ### AI Usage
 

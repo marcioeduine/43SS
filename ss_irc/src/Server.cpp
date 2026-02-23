@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcaquart <mcaquart@student.42.fr>          +#+  +:+       +#+        */
+/*   By: timatias <timatias@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:58:13 by mcaquart          #+#    #+#             */
-/*   Updated: 2026/02/16 12:00:00 by mcaquart         ###   ########.fr       */
+/*   Updated: 2026/02/21 00:12:44 by timatias         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,46 +494,42 @@ void	Server::checkTimeouts(void)
 	std::map<int, Client *>::iterator		it(_clients.begin());
 	std::vector<std::pair<int, t_text> >	toRemove;
 	time_t									now(time(NULL));
+	int										timeout_limit(60);
 	Client									*client;
 	t_ss									ss;
 	size_t									i(-1);
 
 	while (it != _clients.end())
 	{
-		client = it->second;
+		(client = it->second, ss.clear());
 		if (not client->isAuthenticated()
-			and (now - client->getLastActivity() > 30))
+			and (now - client->getLastActivity() > timeout_limit))
 		{
-			sendTo(client->getFd(),
-				t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET
-				+ "Closing Link: Registration timeout\r\n");
+			ss << SS_ALERT << "[ ERROR ] " << SS_RESET << "Closing Link: Registration timeout\r\n";
+			send(client->getFd(), ss.str().c_str(), ss.str().length(), MSG_NOSIGNAL);
 			toRemove.push_back(std::make_pair(it->first,
 				t_text(SS_ALERT) + "[ TIMEOUT ] " + SS_RESET
-				+ "no auth after 30s"));
+				+ "no auth after 60s"));
 			++it;
 			continue ;
 		}
 		if (client->isAuthenticated()
-			and (now - client->getLastActivity() > 60))
+			and (now - client->getLastActivity() > timeout_limit))
 		{
 			if (not client->isPingPending())
 			{
-				ss.str("");
 				ss << "PING :" << SERVER_NAME << "\r\n";
-				sendTo(client->getFd(), ss.str());
+				send(client->getFd(), ss.str().c_str(), ss.str().length(), MSG_NOSIGNAL);
 				client->setPingPending(true);
 				client->setPingSentTime(now);
 				std::cout << SS_YELLOW << "PING" << SS_RESET << " sent to "
 					<< ss_client_id(client) << std::endl;
 			}
-			else if (now - client->getPingSentTime() > 60)
+			else if (now - client->getPingSentTime() > timeout_limit)
 			{
-				sendTo(client->getFd(),
-					t_text(SS_ALERT) + "[ ERROR ] " + SS_RESET
-					+ "Closing Link: Ping timeout (120 seconds)\r\n");
-				toRemove.push_back(std::make_pair(it->first,
-					t_text(SS_ALERT) + "[ TIMEOUT ] " + SS_RESET
-					+ "no PONG after 120s"));
+				ss << SS_ALERT << "[ ERROR ] " << SS_RESET << "Closing Link: Ping timeout (120 seconds)\r\n";
+				send(client->getFd(), ss.str().c_str(), ss.str().length(), MSG_NOSIGNAL);
+				toRemove.push_back(std::make_pair(it->first, t_text(SS_ALERT) + "[ TIMEOUT ] " + SS_RESET + "no PONG after 120s"));
 			}
 		}
 		++it;
