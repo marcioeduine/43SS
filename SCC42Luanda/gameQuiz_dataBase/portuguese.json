@@ -1,0 +1,104 @@
+{
+	"quiz_gender":
+	{
+		"question": "Então, cadete, tu és homem ou mulher?",
+		"a": "Sou homem.",
+		"b": "Sou mulher."
+	},
+
+	"quiz_01":
+	{
+		"question": "Quando é que se deu início à primeira Piscina na escola 42 Luanda?",
+		"a": "Aos 13 de Novembro de 2023.",
+		"b": "Aos 5 de Janeiro de 2024.",
+		"c": "Aos 7 de Março de 2024.",
+		"d": "Aos 22 de Fevereiro de 2024."
+	},
+
+	"quiz_02":
+	{
+		"question": "Em que dia da semana é que se realizam os\nexames na Piscina da escola 42 Luanda?",
+		"a": "Às Sextas-feiras.",
+		"b": "Aos Sábados.",
+		"c": "Aos Domingos.",
+		"d": "Às Segundas-feiras."
+	},
+
+	"quiz_03":
+	{
+		"question": "Na escola 42 Luanda, quais são as linguagens de programação\nque foram ensinadas na Piscina de Novembro de 2023?",
+		"a": "ShellScript e C.",
+		"b": "JavaScript e C++.",
+		"c": "Python e C#.",
+		"d": "LuaScript e Java."
+	},
+
+	"quiz_04":
+	{
+		"question": "Quantas Piscinas a escola 42 Luanda realizou em 2023?",
+		"a": "Uma.",
+		"b": "Duas.",
+		"c": "Três.",
+		"d": "Nenhuma."
+	},
+
+	"quiz_05":
+	{
+		"question": "Quando é que os membros do staff da escola 42 Luanda\ndeixam de ser amigos dos Pisciners?",
+		"a": "Durante os exames.",
+		"b": "No BSQ.",
+		"c": "Nos Rushes.",
+		"d": "Nunca."
+	},
+
+	"quiz_06":
+	{
+		"affirmation": "Introduz o nome que os Pisciners de Novembro chamam ao\nEngenheiro Nádio Fortunato, membro do staff da 42 Luanda.",
+		"a": "Moulinette"
+	},
+
+	"quiz_07":
+	{
+		"question": "Qual é a empresa que deu formações gratuitas aos cadetes e ex-Pisciners\nda escola 42 Luanda no ano de 2024?",
+		"a": "TisTech.",
+		"b": "Sonangol.",
+		"c": "Total Energies.",
+		"d": "Unitel."
+	},
+
+	"quiz_08":
+	{
+		"question": "Nivas era o nome artístico de qual dos seguintes membros do staff\nda escola 42 Luanda?",
+		"a": "Nenhum.",
+		"b": "Engenheiro Nádio Fortunato.",
+		"c": "Engenheiro Leonel Francisco.",
+		"d": "Engenheira Nyanga Tyitapeka."
+	},
+
+	"quiz_09":
+	{
+		"question": "Qual é o nome do formador que fazia piadas sem graça nas formações\nque ocorreram no início do ano de 2024 na escola 42 Luanda,\nmas de forma engraçada?",
+		"a": "Fabiano Canella.",
+		"b": "Venâncio Vicente.",
+		"c": "Nivaldo Ceita.",
+		"d": "Engenheiro Leonel Francisco."
+	},
+
+	"quiz_10":
+	{
+		"question": "Qual é o nome do desenvolvedor do jogo\nSou Cadete e Conheço a 42 Luanda?",
+		"a": "Márcio Eduine.",
+		"b": "Mauro Silva.",
+		"c": "Daniel Chissali.",
+		"d": "Engenheiro Afonso Luzingu."
+	},
+
+	"quiz_11":
+	{
+		"question": "Que nome é dado ao candidato que se consegue inscrever\na tempo para uma Piscina da 42 Luanda?",
+		"a": "Ninja F5.",
+		"b": "Slack 42 Luanda.",
+		"c": "Pisciner.",
+		"d": "Cadete."
+	}
+}

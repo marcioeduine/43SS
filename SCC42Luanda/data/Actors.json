@@ -1,0 +1,6 @@
+[
+null,
+{"id":1,"battlerName":"","characterIndex":0,"characterName":"","classId":1,"equips":[2],"faceIndex":0,"faceName":"00 - Main Characters","traits":[],"initialLevel":1,"maxLevel":99,"name":"Homem","nickname":"","note":"","profile":""},
+{"id":2,"battlerName":"","characterIndex":0,"characterName":"","classId":1,"equips":[2],"faceIndex":1,"faceName":"00 - Main Characters","traits":[],"initialLevel":1,"maxLevel":99,"name":"Mulher","nickname":"","note":"","profile":""},
+{"id":3,"battlerName":"","characterIndex":0,"characterName":"","classId":2,"equips":[0,0,0,0,0],"faceIndex":0,"faceName":"00 - Main Characters","traits":[],"initialLevel":1,"maxLevel":99,"name":"textInput","nickname":"","note":"","profile":""}
+]
